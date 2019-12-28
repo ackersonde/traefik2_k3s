@@ -24,8 +24,8 @@ jobs:
 
             gcloud compute instances create traefik-k3s-$CIRCLE_BUILD_NUM \
               --image-family=debian-10 --image-project=debian-cloud \
-              --machine-type=g1-small --boot-disk-size=10GB --boot-disk-type pd-ssd \
-              --zone europe-west3-c
+              --machine-type=g1-small --boot-disk-size=10GB --boot-disk-type=pd-ssd \
+              --zone=europe-west3-c
 
             apk -u add jq apache2-utils
             PUBLIC_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM \
