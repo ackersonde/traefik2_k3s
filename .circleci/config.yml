@@ -55,7 +55,7 @@ jobs:
             # ensure GCE instance is fully up & ready for SSH connections
             sleep 10
 
-            htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD'
+            htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER $CTX_BASIC_AUTH_PASSWD
             base64 .htpasswd | tr -d \\n > .htpasswd_b64
             export BASE64_ENCODED_HTPASSWD=`cat .htpasswd_b64`
             sed -i -e "s@{{BASE64_ENCODED_HTPASSWD}}@$BASE64_ENCODED_HTPASSWD@" 02-svcs-middleware-secrets.yml
