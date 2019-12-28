@@ -56,7 +56,7 @@ jobs:
             sleep 10
 
             export INTERNAL_HOST_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM --format=json | jq -r '.networkInterfaces[0].networkIP'`
-            export BASE64_ENCODED_HTPASSWD=`htpasswd -nb $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD' | base64`
+            export BASE64_ENCODED_HTPASSWD=`htpasswd -nb $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD' | base64 | tr -d \\n`
 
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
             sed -i -e "s@{{BASE64_ENCODED_HTPASSWD}}@$BASE64_ENCODED_HTPASSWD@" 02-svcs-middleware-secrets.yml
