@@ -1,0 +1,34 @@
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: traefik2-web-ui
+spec:
+  entryPoints:
+    - secure
+  routes:
+    - kind: Rule
+      match: Host(`apigcp.ackerson.de`)
+      middlewares:
+        - name: api-auth
+      services:
+        - name: traefik2-service
+          port: 8080
+  tls:
+    certResolver: letsencrypt
+
+---
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: traefik2-web-ui-http
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`apigcp.ackerson.de`)
+      middlewares:
+          - name: tls-redirect
+      services:
+        - name: traefik2-service
+          port: 8080

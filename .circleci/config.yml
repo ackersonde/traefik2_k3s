@@ -1,0 +1,107 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: google/cloud-sdk:alpine
+    working_directory: ~/gke
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - $CTX_SSH_DEPLOY_FINGERPRINT
+      - run:
+          name: Store Service Accounts
+          command: |
+            echo $CTX_GOOGLE_DEPLOY_SERVICE_JSON > ${HOME}/gcloud-service-key.json
+            chmod 600 $HOME/gcloud-service-key.json
+
+      - run:
+          name: Setup compute instance
+          command: |
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${CTX_GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${CTX_GOOGLE_COMPUTE_ZONE}
+
+            gcloud compute instances create traefik-k3s-$CIRCLE_BUILD_NUM \
+              --image-family=debian-10 --image-project=debian-cloud \
+              --machine-type=f1-micro --boot-disk-size=10GB --zone us-east1-b
+
+            apk -u add jq apache2-utils
+            PUBLIC_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM \
+              --format=json | jq -r '.networkInterfaces[0].accessConfigs[0].natIP'`
+            echo "Public IP is: $PUBLIC_IP"
+            echo $PUBLIC_IP > /tmp/public_ip.txt
+
+      - run:
+          name: Prepare deploy network access
+          command: |
+            ORIG_RANGE=`gcloud compute firewall-rules describe default-allow-ssh \
+              --format=json | jq -r '.sourceRanges | @csv'`
+            ORIG_RANGE=`echo ${ORIG_RANGE//\"}`
+            echo $ORIG_RANGE > /tmp/orig_range.txt
+
+            export DEPLOY_IP=`curl -s https://icanhazip.com`
+            gcloud compute firewall-rules update default-allow-ssh \
+              --source-ranges=$ORIG_RANGE,$DEPLOY_IP
+
+      - checkout
+      - run:
+          name: Install K3S
+          command: |
+            export PUBLIC_IP=`cat /tmp/public_ip.txt`
+
+            chmod 600 *.yml
+
+            # ensure GCE instance is fully up & ready for SSH connections
+            sleep 10
+
+            scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
+            ssh ackersond@$PUBLIC_IP -- "curl -sfL https://get.k3s.io | \
+                sh -s - server --no-deploy traefik --no-deploy servicelb"
+
+      - run:
+          name: Launch Traefik & Weechat containers
+          command: |
+            export PUBLIC_IP=`cat /tmp/public_ip.txt`
+            export INTERNAL_HOST_IP=`hostname --ip-address`
+            export BASE64_ENCODED_HTPASSWD=`htpasswd -nb $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD' | base64`
+
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{BASE64_ENCODED_HTPASSWD}}@$BASE64_ENCODED_HTPASSWD@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{DO_AUTH_TOKEN}}@$CTX_DIGITALOCEAN_TOKEN@" 03-deployments.yml
+
+            ssh core@$PUBLIC_IP -- "sudo kubectl apply -f 01-clusterrole-CRDs.yml &&
+              sudo kubectl apply -f 02-svcs-middleware-secrets.yml &&
+              sudo kubectl apply -f 03-deployments.yml &&
+              sudo kubectl apply -f 04-ingressroutes.yml &&
+              sudo kubectl apply -f whoami.yml"
+
+      - run:
+          name: Update DNS entries of apigcp & k3sgcp
+          command: |
+            export PUBLIC_IP=`cat /tmp/public_ip.txt`
+            #curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $CTX_DIGITALOCEAN_TOKEN" \
+            #  "https://api.digitalocean.com/v2/domains/ackerson.de/records?page=2"
+
+            curl --silent -X PUT -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $CTX_DIGITALOCEAN_TOKEN" -d "{\"data\":\"$PUBLIC_IP\"}" \
+              "https://api.digitalocean.com/v2/domains/ackerson.de/records/83995585"
+            curl --silent -X PUT -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $CTX_DIGITALOCEAN_TOKEN" -d "{\"data\":\"$PUBLIC_IP\"}" \
+              "https://api.digitalocean.com/v2/domains/ackerson.de/records/83995576"
+
+      - run:
+          name: Remove deploy network access
+          command: |
+            export ORIG_RANGE=`cat /tmp/orig_range.txt`
+            if [ ! -z "$ORIG_RANGE" ]; then
+              gcloud compute firewall-rules update default-allow-ssh \
+                --source-ranges=$ORIG_RANGE
+            fi
+          when: always
+
+workflows:
+  build:
+    jobs:
+        - build:
+            context: org-global

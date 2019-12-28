@@ -1,0 +1,90 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: traefik2-ingress-controller
+  labels:
+    k8s-app: traefik2-clusterip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: traefik2-clusterip
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik2-clusterip
+        name: traefik2-clusterip
+    spec:
+      serviceAccountName: traefik2-ingress-controller
+      terminationGracePeriodSeconds: 60
+      restartPolicy: Always
+      containers:
+      - image: traefik:2.1
+        name: traefik2-clusterip
+        ports:
+          - name: web
+            containerPort: 80
+          - name: admin
+            containerPort: 8080
+          - name: secure
+            containerPort: 443
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: admin
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: admin
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        args:
+          - --entryPoints.web.address=:80
+          - --entryPoints.secure.address=:443
+          - --entryPoints.traefik.address=:8080
+          - --api.dashboard=true
+          - --api.insecure=true
+          - --ping=true
+          - --providers.kubernetesCRD
+          - --providers.kubernetesIngress
+          - --log.level=WARN
+          - --certificatesresolvers.letsencrypt.acme.email=dan@ackerson.de
+          - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
+          - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean
+          - --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5
+          # Please note that this is the staging Let's Encrypt server.
+          # Once you get things working, you should remove that whole line altogether.
+          - --certificatesresolvers.letsencrypt.acme.CAserver=https://acme-staging-v02.api.letsencrypt.org/directory
+        env:
+          - name: DO_AUTH_TOKEN
+            value: {{DO_AUTH_TOKEN}}
+        volumeMounts:
+          - name: storage-volume
+            mountPath: /data
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: traefik-acme-storage
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    component: "server"
+    app: traefik
+  name: traefik-acme-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "100Mi"
