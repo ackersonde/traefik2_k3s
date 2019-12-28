@@ -55,12 +55,12 @@ jobs:
             # ensure GCE instance is fully up & ready for SSH connections
             sleep 10
 
-            export INTERNAL_HOST_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM --format=json | jq -r '.networkInterfaces[0].networkIP'`
-            htpasswd -nb $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD' | base64 | tr -d \\n > .htpasswd_b64
-            export BASE64_ENCODED_HTPASSWD=`cat .htpasswd_b64`
-
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+            htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER '$CTX_BASIC_AUTH_PASSWD'
+            export BASE64_ENCODED_HTPASSWD=`base64 .htpasswd`
             sed -i -e "s@{{BASE64_ENCODED_HTPASSWD}}@$BASE64_ENCODED_HTPASSWD@" 02-svcs-middleware-secrets.yml
+
+            export INTERNAL_HOST_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM --format=json | jq -r '.networkInterfaces[0].networkIP'`
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
             sed -i -e "s@{{DO_AUTH_TOKEN}}@$CTX_DIGITALOCEAN_TOKEN@" 03-deployments.yml
 
             scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
