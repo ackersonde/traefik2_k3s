@@ -66,10 +66,10 @@ jobs:
 
             scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
             ssh ackersond@$PUBLIC_IP -- "curl -sfL https://get.k3s.io | \
-                sh -s - server --no-deploy traefik --no-deploy servicelb"
+              sh -s - server --no-deploy traefik --no-deploy servicelb"
 
       - run:
-          name: Install Traefik & CRDs
+          name: Install CRDs for Traefik, Docker registry creds & launch Traefik
           command: |
             export PUBLIC_IP=`cat /tmp/public_ip.txt`
 
@@ -77,6 +77,11 @@ jobs:
               sudo kubectl apply -f 02-svcs-middleware-secrets.yml &&
               sudo kubectl apply -f 03-deployments.yml &&
               sudo kubectl apply -f 04-ingressroutes.yml &&
+              sudo kubectl create secret docker-registry dockerhub \
+              --docker-server=https://index.docker.io/v1/ \
+              --docker-username=$CTX_DOCKER_USER \
+              --docker-password=$CTX_DOCKER_PASS \
+              --docker-email=dan@ackerson.de &&
               echo \"alias k='sudo kubectl'\" >> .bashrc"
 
       - run:
