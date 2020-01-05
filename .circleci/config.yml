@@ -67,6 +67,10 @@ jobs:
             export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
             sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 02-svcs-middleware-secrets.yml
 
+            echo -n "$CTX_DATADOG_API_KEY" | base64 | tr -d \\n > .base64_enc
+            export CTX_DATADOG_API_KEY_B64=`cat .base64_enc`
+            sed -i -e "s@{{CTX_DATADOG_API_KEY_B64}}@$CTX_DATADOG_API_KEY_B64@" datadog-agent.yml
+
             rm .base64_enc
             scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
             ssh ackersond@$PUBLIC_IP -- "curl -sfL https://get.k3s.io | \
@@ -86,7 +90,10 @@ jobs:
               --docker-username=$CTX_DOCKER_USER \
               --docker-password=$CTX_DOCKER_PASS \
               --docker-email=dan@ackerson.de &&
-              echo \"alias k='sudo kubectl'\" >> .bashrc"
+              echo \"alias k='sudo kubectl'\" >> .bashrc &&
+              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrole.yaml &&
+              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/serviceaccount.yaml &&
+              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrolebinding.yaml"
 
       - run:
           name: Update DNS entries of apigcp & k3sgcp
