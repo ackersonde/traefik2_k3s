@@ -67,7 +67,7 @@ spec:
           - name: DO_AUTH_TOKEN
             valueFrom:
               secretKeyRef:
-                name: api-secret
+                name: digital-ocean-secret
                 key: digital-ocean-token
         volumeMounts:
           - name: storage-volume
