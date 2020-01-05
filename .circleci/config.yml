@@ -56,14 +56,18 @@ jobs:
             sleep 10
 
             htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER $CTX_BASIC_AUTH_PASSWD
-            base64 .htpasswd | tr -d \\n > .htpasswd_b64
-            export BASE64_ENCODED_HTPASSWD=`cat .htpasswd_b64`
-            sed -i -e "s@{{BASE64_ENCODED_HTPASSWD}}@$BASE64_ENCODED_HTPASSWD@" 02-svcs-middleware-secrets.yml
+            base64 .htpasswd | tr -d \\n > .base64_enc
+            export HTPASSWD_B64=`cat .base64_enc`
+            sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" 02-svcs-middleware-secrets.yml
 
             export INTERNAL_HOST_IP=`gcloud compute instances describe traefik-k3s-$CIRCLE_BUILD_NUM --format=json | jq -r '.networkInterfaces[0].networkIP'`
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
-            sed -i -e "s@{{DO_AUTH_TOKEN}}@$CTX_DIGITALOCEAN_TOKEN@" 03-deployments.yml
 
+            echo -n "$CTX_DIGITALOCEAN_TOKEN" | base64 | tr -d \\n > .base64_enc
+            export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
+            sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 03-deployments.yml
+
+            rm .base64_enc
             scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
             ssh ackersond@$PUBLIC_IP -- "curl -sfL https://get.k3s.io | \
               sh -s - server --no-deploy traefik --no-deploy servicelb"

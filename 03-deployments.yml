@@ -62,10 +62,13 @@ spec:
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5
           # Please note that this is the staging Let's Encrypt server.
           # Once you get things working, you should remove that whole line altogether.
-          - --certificatesresolvers.letsencrypt.acme.CAserver=https://acme-staging-v02.api.letsencrypt.org/directory
+          # - --certificatesresolvers.letsencrypt.acme.CAserver=https://acme-staging-v02.api.letsencrypt.org/directory
         env:
           - name: DO_AUTH_TOKEN
-            value: {{DO_AUTH_TOKEN}}
+            valueFrom:
+              secretKeyRef:
+                name: api-secret
+                key: digital-ocean-token
         volumeMounts:
           - name: storage-volume
             mountPath: /data
@@ -88,3 +91,5 @@ spec:
   resources:
     requests:
       storage: "100Mi"
+  hostPath:
+    path: "/home/pi/traefik/letsencrypt"
