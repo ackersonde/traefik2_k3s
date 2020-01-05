@@ -65,7 +65,7 @@ jobs:
 
             echo -n "$CTX_DIGITALOCEAN_TOKEN" | base64 | tr -d \\n > .base64_enc
             export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
-            sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 03-deployments.yml
+            sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 02-svcs-middleware-secrets.yml
 
             rm .base64_enc
             scp -o StrictHostKeyChecking=no -r *.yml ackersond@$PUBLIC_IP:~/
