@@ -1,26 +1,23 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: traefik2-ingress-controller
-  labels:
-    k8s-app: traefik2-clusterip
+  name: traefik2-deploy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      k8s-app: traefik2-clusterip
+      run: traefik2-proxy
   template:
     metadata:
       labels:
-        k8s-app: traefik2-clusterip
-        name: traefik2-clusterip
+        run: traefik2-proxy
     spec:
       serviceAccountName: traefik2-ingress-controller
       terminationGracePeriodSeconds: 60
       restartPolicy: Always
       containers:
       - image: traefik:2.1
-        name: traefik2-clusterip
+        name: traefik2-ctr
         ports:
           - name: web
             containerPort: 80
@@ -82,10 +79,9 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  labels:
-    component: server
-    app: traefik
   name: traefik-acme-storage
+  labels:
+    run: traefik2-proxy
 spec:
   storageClassName: manual
   accessModes:
@@ -99,8 +95,6 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: task-pv-volume
-  labels:
-    type: local
 spec:
   storageClassName: manual
   capacity:
