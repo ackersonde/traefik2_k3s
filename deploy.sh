@@ -2,7 +2,7 @@
 #TODO: run following cmds in case
 # sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
 # sudo reboot
-#NOTE2: docker stop traefik !!! dumbass - otherwise, you'll have pain & confusion
+#NOTE2: docker stop traefik !! otherwise, pain & confusion
 
 export INTERNAL_HOST_IP=`hostname --ip-address` # for patching 02-svcs.yml -> externalIPs!
 curl -sfL https://get.k3s.io | sh -s - server --no-deploy traefik --no-deploy servicelb

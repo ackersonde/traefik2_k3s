@@ -90,10 +90,7 @@ jobs:
               --docker-username=$CTX_DOCKER_USER \
               --docker-password=$CTX_DOCKER_PASS \
               --docker-email=dan@ackerson.de &&
-              echo \"alias k='sudo kubectl'\" >> .bashrc &&
-              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrole.yaml &&
-              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/serviceaccount.yaml &&
-              sudo kubectl create -f https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrolebinding.yaml"
+              echo \"alias k='sudo kubectl'\" >> .bashrc"
 
       - run:
           name: Update DNS entries of apigcp & k3sgcp

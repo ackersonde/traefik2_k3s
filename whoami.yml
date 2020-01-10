@@ -8,28 +8,25 @@ spec:
       port: 80
       protocol: TCP
   selector:
-    app: whoami
+    run: whoami-app
 
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  namespace: default
-  name: whoami
-  labels:
-    app: whoami
+  name: whoami-deploy
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: whoami
+      run: whoami-app
   template:
     metadata:
       labels:
-        app: whoami
+        run: whoami-app
     spec:
       containers:
-        - name: whoami
+        - name: whoami-ctr
           image: containous/whoami
           ports:
             - name: web
