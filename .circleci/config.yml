@@ -3,19 +3,18 @@ version: 2.1
 orbs:
   ipsec: danackerson/ipsec@0.2.4
 
-commands:
-  prepare_deploy_script:
+jobs:
+  build:
+    docker:
+      - image: alpine
+    working_directory: /setup
     steps:
       - checkout
       - run:
-          name: Prepare deploy script for Traefik Proxy server
+          name: Prepare YAML config files
           command: |
-            cat \<<EOF >deploy_script.sh
-
+            apk -u add apache2-utils
             chmod 600 *.yml
-
-            apt update
-            apt install -y apache2-utils
 
             htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER $CTX_BASIC_AUTH_PASSWD
             base64 .htpasswd | tr -d \\n > .base64_enc
@@ -34,11 +33,28 @@ commands:
             sed -i -e "s@{{CTX_DATADOG_API_KEY_B64}}@$CTX_DATADOG_API_KEY_B64@" datadog-agent.yml
 
             rm .base64_enc
+      - persist_to_workspace:
+          root: /setup
+          paths:
+            - 01-clusterrole-CRDs.yml
+            - 02-svcs-middleware-secrets.yml
+            - 03-deployments.yml
+            - 04-ingressroutes.yml
+            - datadog-agent.yml
+            - whoami.yml
+            - update_domain_records.sh
 
+commands:
+  prepare_deploy_script:
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Prepare deploy script for Traefik Proxy server
+          command: |
+            cat \<<EOF >deploy_script.sh
             scp -o StrictHostKeyChecking=no *.yml update_domain_records.sh $SSH_USER@$SSH_HOST:~/
-
-            ssh $SSH_USER@$SSH_HOST "\
-              mkdir traefik || true && \
+            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && \
               touch traefik/acme.json && \
               chmod 600 traefik/acme.json && \
               curl -sfL https://get.k3s.io | \
@@ -51,18 +67,21 @@ commands:
                 --docker-server=https://index.docker.io/v1/ \
                 --docker-username=$CTX_DOCKER_USER \
                 --docker-password=$CTX_DOCKER_PASS \
-                --docker-email=dan@ackerson.de && \
-            "
+                --docker-email=dan@ackerson.de"
             EOF
 
             chmod u+x deploy_script.sh
 
 workflows:
-  deploy-propagate:
+  build-deploy:
     jobs:
+      - build:
+          context: org-global
       - ipsec/remote-deploy:
           context: org-global
           name: deploy-k3s-traefik
+          requires:
+              - build
           pre-steps:
             - prepare_deploy_script
 
