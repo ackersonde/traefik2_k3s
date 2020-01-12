@@ -29,7 +29,7 @@ jobs:
             export CTX_DATADOG_API_KEY_B64=`cat .base64_enc`
             sed -i -e "s@{{CTX_DATADOG_API_KEY_B64}}@$CTX_DATADOG_API_KEY_B64@" datadog-agent.yml
 
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" k3s/02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
 
             rm .base64_enc
       - persist_to_workspace:
