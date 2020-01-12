@@ -50,7 +50,8 @@ commands:
           name: Prepare deploy script for Traefik Proxy server
           command: |
             cat \<<EOF >deploy_script.sh
-            scp -o StrictHostKeyChecking=no /tmp/*.yml /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
+            scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
+            scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && \
               touch traefik/acme.json && \
               chmod 600 traefik/acme.json && \
@@ -59,12 +60,13 @@ commands:
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \
 
               export INTERNAL_HOST_IP=`host $SSH_HOST | grep 'address' | cut -d' ' -f4 | head -n1` && \
-              sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml && \
+              echo "Host: $SSH_HOST IP: $INTERNAL_HOST_IP" && \
+              sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" k3s/02-svcs-middleware-secrets.yml && \
 
-              sudo kubectl apply -f 01-clusterrole-CRDs.yml && \
-              sudo kubectl apply -f 02-svcs-middleware-secrets.yml && \
-              sudo kubectl apply -f 03-deployments.yml && \
-              sudo kubectl apply -f 04-ingressroutes.yml && \
+              sudo kubectl apply -f k3s/01-clusterrole-CRDs.yml && \
+              sudo kubectl apply -f k3s/02-svcs-middleware-secrets.yml && \
+              sudo kubectl apply -f k3s/03-deployments.yml && \
+              sudo kubectl apply -f k3s/04-ingressroutes.yml && \
               sudo kubectl create secret docker-registry dockerhub \
                 --docker-server=https://index.docker.io/v1/ \
                 --docker-username=$CTX_DOCKER_USER \
