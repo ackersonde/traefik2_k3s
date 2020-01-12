@@ -21,9 +21,6 @@ jobs:
             export HTPASSWD_B64=`cat .base64_enc`
             sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" 02-svcs-middleware-secrets.yml
 
-            export INTERNAL_HOST_IP=`host $SSH_HOST | grep 'address' | cut -d' ' -f4 | head -n1`
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
-
             echo -n "$CTX_DIGITALOCEAN_TOKEN" | base64 | tr -d \\n > .base64_enc
             export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
             sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 02-svcs-middleware-secrets.yml
@@ -53,12 +50,16 @@ commands:
           name: Prepare deploy script for Traefik Proxy server
           command: |
             cat \<<EOF >deploy_script.sh
-            scp -o StrictHostKeyChecking=no *.yml update_domain_records.sh $SSH_USER@$SSH_HOST:~/
+            scp -o StrictHostKeyChecking=no /tmp/*.yml /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && \
               touch traefik/acme.json && \
               chmod 600 traefik/acme.json && \
               curl -sfL https://get.k3s.io | \
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \
+
+              export INTERNAL_HOST_IP=`host $SSH_HOST | grep 'address' | cut -d' ' -f4 | head -n1`
+              sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+
               sudo kubectl apply -f 01-clusterrole-CRDs.yml && \
               sudo kubectl apply -f 02-svcs-middleware-secrets.yml && \
               sudo kubectl apply -f 03-deployments.yml && \
