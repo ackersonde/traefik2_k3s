@@ -7,7 +7,7 @@ spec:
     - secure
   routes:
     - kind: Rule
-      match: Host(`apigcp.ackerson.de`)
+      match: Host(`monitor.ackerson.de`)
       middlewares:
         - name: api-auth
       services:
@@ -26,7 +26,7 @@ spec:
     - web
   routes:
     - kind: Rule
-      match: Host(`apigcp.ackerson.de`)
+      match: Host(`monitor.ackerson.de`)
       middlewares:
           - name: tls-redirect
       services:

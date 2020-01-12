@@ -102,4 +102,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/pi/traefik/letsencrypt"
+    path: "/home/pi/traefik"
