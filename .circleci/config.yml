@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ipsec: danackerson/ipsec@1.0.3
+  ipsec: danackerson/ipsec@1.1.1
 
 jobs:
   build:
@@ -51,7 +51,7 @@ commands:
       - run:
           name: Prepare deploy script for Traefik Proxy server
           command: |
-            cat \<<EOF >deploy_script.sh
+            cat \<<EOF >/tmp/deploy_script.sh
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
             scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && \
@@ -71,7 +71,7 @@ commands:
                 --docker-email=dan@ackerson.de"
             EOF
 
-            chmod u+x deploy_script.sh
+            chmod u+x /tmp/deploy_script.sh
 
 workflows:
   build-deploy:
