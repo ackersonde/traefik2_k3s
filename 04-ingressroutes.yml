@@ -7,7 +7,7 @@ spec:
     - secure
   routes:
     - kind: Rule
-      match: Host(`apigcp.ackerson.de`)
+      match: Host(`monitor.ackerson.de`)
       middlewares:
         - name: api-auth
       services:
@@ -26,9 +26,25 @@ spec:
     - web
   routes:
     - kind: Rule
-      match: Host(`apigcp.ackerson.de`)
+      match: Host(`monitor.ackerson.de`)
       middlewares:
-          - name: tls-redirect
+        - name: tls-redirect
       services:
         - name: traefik2-service
           port: 8080
+
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: router-web-ui
+spec:
+  entryPoints:
+    - secure
+  routes:
+    - kind: Rule
+      match: Host(`fritz.ackerson.de`)
+      services:
+        - name: traefik2-service
+          port: 8080
+  tls:
+    certResolver: letsencrypt

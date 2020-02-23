@@ -53,7 +53,7 @@ spec:
           - --providers.kubernetesCRD
           - --providers.kubernetesIngress
           - --log.level=WARN
-          - --metrics.datadog=true
+          - --metrics.datadog=false
           - --certificatesresolvers.letsencrypt.acme.email=dan@ackerson.de
           - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean
@@ -102,4 +102,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/pi/traefik/letsencrypt"
+    path: "/home/pi/traefik"
