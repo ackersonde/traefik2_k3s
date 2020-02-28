@@ -59,8 +59,7 @@ spec:
           - --accesslog.fields.headers.names.User-Agent=drop
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
-#          - --entryPoints.secure.proxyProtocol.trustedIPs=127.0.0.1/32
-          - --entryPoints.secure.proxyProtocol.insecure
+          - --entryPoints.secure.proxyProtocol.trustedIPs=192.168.178.29/32
           - --entryPoints.traefik.address=:8080
           - --api.dashboard=true
           - --api.insecure=true
