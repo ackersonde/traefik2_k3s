@@ -54,9 +54,9 @@ spec:
           - --accesslog.fields.names.RequestAddr=keep
           - --accesslog.fields.names.RequestHost=keep
 #          - --accesslog.fields.headers.defaultmode=keep
+          - --accesslog.fields.headers.names.X-Forwarded-Host=keep
+          - --accesslog.fields.headers.names.X-Real-Ip=keep
           - --accesslog.fields.headers.names.User-Agent=drop
-          - --accesslog.fields.headers.names.Authorization=drop
-          - --accesslog.fields.headers.names.Content-Type=drop
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
           - --entryPoints.traefik.address=:8080
