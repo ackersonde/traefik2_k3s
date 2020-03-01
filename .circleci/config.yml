@@ -54,16 +54,17 @@ commands:
             cat \<<EOF >/tmp/deploy_script.sh
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
             scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
-            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && \
+            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true \
               touch traefik/acme.json && \
-              chmod 600 traefik/acme.json && \
+              chmod 600 traefik/acme.json && cd k3s && \
               curl -sfL https://get.k3s.io | \
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \
-
-              sudo kubectl apply -f k3s/01-clusterrole-CRDs.yml && \
-              sudo kubectl apply -f k3s/02-svcs-middleware-secrets.yml && \
-              sudo kubectl apply -f k3s/03-deployments.yml && \
-              sudo kubectl apply -f k3s/04-ingressroutes.yml && \
+              curl -O https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml && \
+              sudo kubectl apply -f 00-deploy-metallb.yml && \
+              sudo kubectl apply -f 01-clusterrole-CRDs.yml && \
+              sudo kubectl apply -f 02-svcs-middleware-secrets.yml && \
+              sudo kubectl apply -f 03-deployments.yml && \
+              sudo kubectl apply -f 04-ingressroutes.yml && \
               sudo kubectl create secret docker-registry dockerhub \
                 --docker-server=https://index.docker.io/v1/ \
                 --docker-username=$CTX_DOCKER_USER \

@@ -60,7 +60,7 @@ spec:
   routes:
   - match: Host(`k3sgcp.ackerson.de`) && PathPrefix(`/tls`)
     middlewares:
-        - name: tls-redirect
+    - name: tls-redirect
     kind: Rule
     services:
     - name: whoami

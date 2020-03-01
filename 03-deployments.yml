@@ -45,21 +45,8 @@ spec:
           successThreshold: 1
           timeoutSeconds: 2
         args:
-          - --accesslog=true
-          - --accesslog.filepath=/var/log/access.log
-          - --accesslog.bufferingsize=100
-          - --accesslog.fields.defaultmode=keep
-          - --accesslog.fields.names.ClientAddr=keep
-          - --accesslog.fields.names.ClientHost=keep
-          - --accesslog.fields.names.RequestAddr=keep
-          - --accesslog.fields.names.RequestHost=keep
-          - --accesslog.fields.headers.defaultmode=keep
-          - --accesslog.fields.headers.names.X-Forwarded-Host=keep
-          - --accesslog.fields.headers.names.X-Real-Ip=keep
-          - --accesslog.fields.headers.names.User-Agent=drop
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
-          - --entryPoints.secure.proxyProtocol.trustedIPs=192.168.178.29/32
           - --entryPoints.traefik.address=:8080
           - --api.dashboard=true
           - --api.insecure=true
