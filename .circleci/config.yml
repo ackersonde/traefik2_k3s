@@ -35,6 +35,7 @@ jobs:
       - persist_to_workspace:
           root: /setup
           paths:
+            - 00-deploy-metallb.yml
             - 01-clusterrole-CRDs.yml
             - 02-svcs-middleware-secrets.yml
             - 03-deployments.yml
