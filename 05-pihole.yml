@@ -91,8 +91,8 @@ spec:
         - name: WEBPASSWORD
           valueFrom:
             secretKeyRef:
-              name: api-secret
-              key: auth
+              name: pihole-secret
+              key: webpassword
         volumeMounts:
         - name: pihole-local-etc-volume
           mountPath: "/etc/pihole"
@@ -126,6 +126,8 @@ spec:
     targetPort: 53
     protocol: UDP
     name: dns-udp
+  type: LoadBalancer
+  loadBalancerIP: 192.168.178.242
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
@@ -142,3 +144,12 @@ spec:
     services:
     - name: pihole
       port: 8000
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: pihole-secret
+  namespace: default
+data:
+  webpassword: {{PIHOLE_WEBPASSWORD_B64}}
