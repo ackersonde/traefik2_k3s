@@ -69,7 +69,6 @@ spec:
             value: "true"
           - name: DD_APM_ENABLED
             value: "true"
-
           - name: DD_KUBERNETES_KUBELET_HOST
             valueFrom:
               fieldRef:
