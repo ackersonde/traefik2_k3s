@@ -27,7 +27,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ingressroutek3sdash
-  namespace: kubernetes-dashboard
 spec:
   entryPoints:
     - web
@@ -36,8 +35,10 @@ spec:
     match: Host(`dash.ackerson.de`)
     middlewares:
     - name: tls-redirect
+      namespace: default
     services:
     - name: kubernetes-dashboard
+      namespace: kubernetes-dashboard
       port: 80
 
 ---
@@ -46,7 +47,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ingressroutek3sdashtls
-  namespace: kubernetes-dashboard
 spec:
   entryPoints:
     - secure
@@ -55,6 +55,7 @@ spec:
     match: Host(`dash.ackerson.de`)
     services:
     - name: kubernetes-dashboard
+      namespace: kubernetes-dashboard
       port: 80
   tls:
     certResolver: letsencrypt
