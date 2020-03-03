@@ -37,6 +37,7 @@ jobs:
       - persist_to_workspace:
           root: /setup
           paths:
+            - k3s-dashboard-admin.yml
             - 00-deploy-metallb.yml
             - 01-clusterrole-CRDs.yml
             - 02-svcs-middleware-secrets.yml
@@ -59,17 +60,14 @@ commands:
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
             scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true \
-              touch traefik/acme.json && \
-              chmod 600 traefik/acme.json && cd k3s && \
+              touch traefik/acme.json && chmod 600 traefik/acme.json && cd k3s && \
               curl -sfL https://get.k3s.io | \
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \
-              curl -O https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml && \
-              sudo kubectl apply -f metallb.yaml && \
-              sudo kubectl apply -f 00-deploy-metallb.yml && \
-              sudo kubectl apply -f 01-clusterrole-CRDs.yml && \
-              sudo kubectl apply -f 02-svcs-middleware-secrets.yml && \
-              sudo kubectl apply -f 03-deployments.yml && \
-              sudo kubectl apply -f 04-ingressroutes.yml && \
+              sudo kubectl apply -f k3s-dashboard-admin.yml
+              sudo kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml \
+                -f 00-deploy-metallb.yml && \
+              sudo kubectl apply -f 01-clusterrole-CRDs.yml && -f 02-svcs-middleware-secrets.yml && \
+              sudo kubectl apply -f 03-deployments.yml && -f 04-ingressroutes.yml && \
               sudo kubectl apply -f 05-pihole.yml && \
               sudo kubectl create secret docker-registry dockerhub \
                 --docker-server=https://index.docker.io/v1/ \

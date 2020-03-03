@@ -169,7 +169,7 @@ spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`pi.hole`)
+  - match: Host(`hole.ackerson.de`)
     kind: Rule
     services:
     - name: pihole-admin

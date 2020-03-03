@@ -17,6 +17,7 @@ spec:
     certResolver: letsencrypt
 
 ---
+
 kind: IngressRoute
 apiVersion: traefik.containo.us/v1alpha1
 metadata:
@@ -32,6 +33,8 @@ spec:
       services:
         - name: traefik2-service
           port: 8080
+
+---
 
 kind: IngressRoute
 apiVersion: traefik.containo.us/v1alpha1
