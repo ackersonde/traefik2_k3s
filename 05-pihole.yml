@@ -15,6 +15,7 @@ spec:
     path: /home/pi/k3s/pihole/etc
 
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -31,6 +32,7 @@ spec:
       directory: etc
 
 ---
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -48,6 +50,7 @@ spec:
     path: /home/pi/k3s/pihole/dnsmasq
 
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -64,6 +67,7 @@ spec:
       directory: dnsmasq.d
 
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -86,6 +90,8 @@ spec:
         image: pihole/pihole:latest
         imagePullPolicy: Always
         env:
+        - name: VIRTUAL_HOST
+          value: hole.ackerson.de
         - name: TZ
           value: "Europe/Berlin"
         - name: WEBPASSWORD
@@ -107,6 +113,7 @@ spec:
           claimName: pihole-local-dnsmasq-claim
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -126,6 +133,7 @@ spec:
   loadBalancerIP: 192.168.178.243
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -145,6 +153,7 @@ spec:
   loadBalancerIP: 192.168.178.243
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -153,29 +162,46 @@ spec:
   selector:
     app: pihole
   ports:
-  - port: 8000
-    targetPort: 80
+  - port: 80
     name: pihole-admin
-  type: LoadBalancer
-  loadBalancerIP: 192.168.178.242
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ingressroutepihole
-  namespace: default
 spec:
   entryPoints:
     - web
+  routes:
+  - kind: Rule
+    match: Host(`hole.ackerson.de`)
+    middlewares:
+        - name: tls-redirect
+    services:
+    - name: pihole-admin
+      port: 80
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroutepiholetls
+spec:
+  entryPoints:
+    - secure
   routes:
   - match: Host(`hole.ackerson.de`)
     kind: Rule
     services:
     - name: pihole-admin
-      port: 8000
+      port: 80
+  tls:
+    certResolver: letsencrypt
 
 ---
+
 kind: Secret
 apiVersion: v1
 metadata:
