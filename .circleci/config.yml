@@ -75,8 +75,8 @@ commands:
               sudo kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml \
                 -f 00-deploy-metallb.yml && \
 
-              sudo kubectl apply -f 01-clusterrole-CRDs.yml && -f 02-svcs-middleware-secrets.yml && \
-              sudo kubectl apply -f 03-deployments.yml && -f 04-ingressroutes.yml && \
+              sudo kubectl apply -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml && \
+              sudo kubectl apply -f 03-deployments.yml -f 04-ingressroutes.yml && \
 
               sudo kubectl apply -f 05-pihole.yml && \
 
