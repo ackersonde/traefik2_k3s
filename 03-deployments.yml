@@ -47,12 +47,13 @@ spec:
         args:
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
+          - --entryPoints.secure.http.tls=true
           - --entryPoints.traefik.address=:8080
           - --api.dashboard=true
           - --api.insecure=true
           - --ping=true
           - --providers.kubernetesCRD
-          - --providers.kubernetesIngress
+          - --providers.kubernetesIngress=true
           - --log.level=WARN
           - --metrics.datadog=false
           - --certificatesresolvers.letsencrypt.acme.email=dan@ackerson.de
