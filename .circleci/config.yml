@@ -81,7 +81,7 @@ commands:
               sudo kubectl apply -f 05-pihole.yml && \
 
               sudo kubectl delete secret dockerhub || true
-              sudo kubectl apply secret docker-registry dockerhub \
+              sudo kubectl create secret docker-registry dockerhub \
                 --docker-server=https://index.docker.io/v1/ \
                 --docker-username=$CTX_DOCKER_USER \
                 --docker-password=$CTX_DOCKER_PASS \
