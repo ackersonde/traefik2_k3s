@@ -16,7 +16,7 @@ spec:
       terminationGracePeriodSeconds: 60
       restartPolicy: Always
       containers:
-      - image: traefik:2.1
+      - image: traefik:2.2
         imagePullPolicy: Always
         name: traefik2-ctr
         ports:

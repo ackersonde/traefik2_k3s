@@ -56,7 +56,7 @@ commands:
       - run:
           name: Prepare deploy script for Traefik Proxy server
           command: |
-            export K8S_DASH_VERSION=v2.0.0-rc5
+            export K8S_DASH_VERSION=v2.0.0-rc6
             export K8S_DASH_URL=https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASH_VERSION/aio/deploy/alternative.yaml
 
             cat \<<EOF >/tmp/deploy_script.sh
