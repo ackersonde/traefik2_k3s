@@ -33,6 +33,8 @@ jobs:
             export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
             sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" 05-pihole.yml
 
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+
             rm .base64_enc
       - persist_to_workspace:
           root: /setup

@@ -14,19 +14,3 @@ spec:
       services:
         - name: traefik2-service
           port: 8080
-
----
-
-kind: IngressRoute
-apiVersion: traefik.containo.us/v1alpha1
-metadata:
-  name: router-web-ui
-spec:
-  entryPoints:
-    - secure
-  routes:
-    - kind: Rule
-      match: Host(`fritz.ackerson.de`)
-      services:
-        - name: traefik2-service
-          port: 8080
