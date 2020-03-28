@@ -82,15 +82,13 @@ commands:
                 -f $K8S_DASH_URL -f $METALLB_BASE_URL/namespace.yaml \
                 -f $METALLB_BASE_URL/metallb.yaml && \
               sudo kubectl create secret generic -n metallb-system memberlist \
-                --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true" && \
+                --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true && \
 
               sudo kubectl apply \
                 -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
                 -f 05-pihole.yml -f k3s-dashboard-admin.yml"
-
-
             EOF
 
             chmod u+x /tmp/deploy_script.sh
