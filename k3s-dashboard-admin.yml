@@ -35,8 +35,20 @@ spec:
   - kind: Rule
     match: Host(`dash.ackerson.de`)
     middlewares:
-    - name: tls-redirect
+    - name: dash-tls-redirect
     services:
     - name: kubernetes-dashboard
       namespace: kubernetes-dashboard
       port: 80
+
+---
+
+kind: Middleware
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: dash-tls-redirect
+  namespace: kubernetes-dashboard
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

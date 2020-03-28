@@ -48,8 +48,8 @@ spec:
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
           - --entryPoints.secure.http.tls.certResolver=letsencrypt
-          - --entryPoints.secure.http.tls.domains[0].main=ackerson.de
-          - --entryPoints.secure.http.tls.domains[0].sans=*.ackerson.de
+          - --entryPoints.secure.http.tls.domains[0].main=*.ackerson.de
+          - --entryPoints.secure.http.tls.domains[0].sans=ackerson.de
           - --entryPoints.traefik.address=:8080
           - --api.dashboard=true
           - --api.insecure=true
