@@ -166,23 +166,6 @@ spec:
     name: pihole-admin
 
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: ingressroutepihole
-spec:
-  entryPoints:
-    - web
-  routes:
-  - kind: Rule
-    match: Host(`hole.ackerson.de`)
-    middlewares:
-        - name: tls-redirect
-    services:
-    - name: pihole-admin
-      port: 80
-
----
 
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -190,15 +173,16 @@ metadata:
   name: ingressroutepiholetls
 spec:
   entryPoints:
+    - web
     - secure
   routes:
   - match: Host(`hole.ackerson.de`)
+    middlewares:
+      - name: tls-redirect
     kind: Rule
     services:
     - name: pihole-admin
       port: 80
-  tls:
-    certResolver: letsencrypt
 
 ---
 
