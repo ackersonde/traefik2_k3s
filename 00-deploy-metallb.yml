@@ -11,4 +11,4 @@ data:
     - name: metal-lb-ip-space
       protocol: layer2
       addresses:
-      - 192.168.178.240-192.168.178.249
+      - 172.16.1.240-172.16.1.250

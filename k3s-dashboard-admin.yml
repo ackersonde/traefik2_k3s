@@ -23,26 +23,6 @@ subjects:
 
 ---
 
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: ingressroutek3sdashtls
-spec:
-  entryPoints:
-    - web
-    - secure
-  routes:
-  - kind: Rule
-    match: Host(`dash.ackerson.de`)
-    middlewares:
-    - name: dash-tls-redirect
-    services:
-    - name: kubernetes-dashboard
-      namespace: kubernetes-dashboard
-      port: 80
-
----
-
 kind: Middleware
 apiVersion: traefik.containo.us/v1alpha1
 metadata:
@@ -52,3 +32,25 @@ spec:
   redirectScheme:
     scheme: https
     permanent: true
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroutek3sdashtls
+  namespace: kubernetes-dashboard
+spec:
+  entryPoints:
+    - web
+    - secure
+  routes:
+  - kind: Rule
+    match: Host(`dash.ackerson.de`)
+    middlewares:
+    - name: dash-tls-redirect
+      namespace: kubernetes-dashboard
+    services:
+    - name: kubernetes-dashboard
+      namespace: kubernetes-dashboard
+      port: 80
