@@ -179,6 +179,7 @@ spec:
   - match: Host(`hole.ackerson.de`)
     middlewares:
       - name: tls-redirect
+      - name: api-auth
     kind: Rule
     services:
     - name: pihole-admin

@@ -11,6 +11,7 @@ spec:
       match: Host(`monitor.ackerson.de`)
       middlewares:
         - name: tls-redirect
+        - name: api-auth
       services:
         - name: traefik2-service
           port: 8080
