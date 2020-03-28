@@ -58,34 +58,31 @@ commands:
           command: |
             export K8S_DASH_VERSION=v2.0.0-rc6
             export K8S_DASH_URL=https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASH_VERSION/aio/deploy/alternative.yaml
+            export METALLB_CONFIG_URL=https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml
 
             cat \<<EOF >/tmp/deploy_script.sh
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
             scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
 
-            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true \
+            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true && \
               touch traefik/acme.json && chmod 600 traefik/acme.json && cd k3s && \
 
               curl -sfL https://get.k3s.io | \
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \
 
-              curl $K8S_DASH_URL > k3s-dashboard.yml && \
-              sudo kubectl apply -f k3s-dashboard.yml -f k3s-dashboard-admin.yml && \
-
-              sudo kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml \
-                -f 00-deploy-metallb.yml && \
-
-              sudo kubectl apply -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml && \
-              sudo kubectl apply -f 03-deployments.yml -f 04-ingressroutes.yml && \
-
-              sudo kubectl apply -f 05-pihole.yml && \
-
-              sudo kubectl delete secret dockerhub || true
+              sudo kubectl delete secret dockerhub || true && \
               sudo kubectl create secret docker-registry dockerhub \
                 --docker-server=https://index.docker.io/v1/ \
                 --docker-username=$CTX_DOCKER_USER \
                 --docker-password=$CTX_DOCKER_PASS \
-                --docker-email=dan@ackerson.de"
+                --docker-email=dan@ackerson.de && \
+
+              sudo kubectl apply \
+                -f $K8S_DASH_URL -f k3s-dashboard-admin.yml \
+                -f $METALLB_CONFIG_URL -f 00-deploy-metallb.yml \
+                -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
+                -f 03-deployments.yml -f 04-ingressroutes.yml \
+                -f 05-pihole.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
