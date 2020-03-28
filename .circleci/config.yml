@@ -58,7 +58,7 @@ commands:
           command: |
             export K8S_DASH_VERSION=v2.0.0-rc6
             export K8S_DASH_URL=https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASH_VERSION/aio/deploy/alternative.yaml
-            export METALLB_CONFIG_URL=https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml
+            export METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/main/manifests/
 
             cat \<<EOF >/tmp/deploy_script.sh
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
@@ -78,11 +78,12 @@ commands:
                 --docker-email=dan@ackerson.de && \
 
               sudo kubectl apply \
-                -f $K8S_DASH_URL -f k3s-dashboard-admin.yml \
-                -f $METALLB_CONFIG_URL -f 00-deploy-metallb.yml \
+                -f $K8S_DASH_URL -f $METALLB_BASE_URL/namespace.yaml \
+                -f $METALLB_BASE_URL/metallb.yaml \
+                -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml"
+                -f 05-pihole.yml -f k3s-dashboard-admin.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
