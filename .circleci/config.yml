@@ -34,13 +34,14 @@ jobs:
             sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" 05-pihole.yml
 
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@g" 05-pihole.yml
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 05-pihole.yml
 
             rm .base64_enc
       - persist_to_workspace:
           root: /setup
           paths:
             - k3s-dashboard-admin.yml
+            - 00-deploy-metallb.yml
             - 01-clusterrole-CRDs.yml
             - 02-svcs-middleware-secrets.yml
             - 03-deployments.yml
@@ -81,10 +82,16 @@ commands:
                 --docker-email=dan@ackerson.de && \
 
               sudo kubectl apply \
+                -f $K8S_DASH_URL -f $METALLB_BASE_URL/namespace.yaml \
+                -f $METALLB_BASE_URL/metallb.yaml && \
+              sudo kubectl create secret generic -n metallb-system memberlist \
+                --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true && \
+
+              sudo kubectl apply \
+                -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml \
-                -f $K8S_DASH_URL -f k3s-dashboard-admin.yml"
+                -f 05-pihole.yml -f k3s-dashboard-admin.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
