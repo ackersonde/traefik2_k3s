@@ -99,6 +99,8 @@ spec:
             secretKeyRef:
               name: pihole-secret
               key: webpassword
+        - name: ServerIP
+          value: {{INTERNAL_HOST_IP}}
         volumeMounts:
         - name: pihole-local-etc-volume
           mountPath: "/etc/pihole"
