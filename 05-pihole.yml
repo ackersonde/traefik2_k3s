@@ -130,9 +130,9 @@ spec:
     targetPort: 53
     protocol: UDP
     name: dns-udp
-  type: LoadBalancer
-  externalTrafficPolicy: Local
-  loadBalancerIP: 192.168.178.243
+  type: NodePort
+  externalIPs:
+  - {{INTERNAL_HOST_IP}}
 
 ---
 
@@ -150,9 +150,9 @@ spec:
     targetPort: 53
     protocol: TCP
     name: dns-tcp
-  type: LoadBalancer
-  externalTrafficPolicy: Local
-  loadBalancerIP: 192.168.178.243
+  type: NodePort
+  externalIPs:
+  - {{INTERNAL_HOST_IP}}
 
 ---
 
