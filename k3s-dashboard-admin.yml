@@ -48,8 +48,10 @@ spec:
   - kind: Rule
     match: Host(`dash.ackerson.de`)
     middlewares:
-    - name: dash-tls-redirect
-      namespace: kubernetes-dashboard
+    - name: tls-redirect
+      namespace: default
+    - name: api-auth
+      namespace: default
     services:
     - name: kubernetes-dashboard
       namespace: kubernetes-dashboard
