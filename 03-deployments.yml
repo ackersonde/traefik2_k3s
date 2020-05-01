@@ -106,4 +106,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/pi/traefik"
+    path: "/home/{{SSH_USER}}/traefik"

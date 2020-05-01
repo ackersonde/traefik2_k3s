@@ -34,6 +34,8 @@ jobs:
             sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" 05-pihole.yml
 
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{SSH_USER}}@$SSH_USER@" 03-deployments.yml
+            sed -i -e "s@{{SSH_USER}}@$SSH_USER@g" 05-pihole.yml
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 05-pihole.yml
 
             rm .base64_enc
@@ -70,6 +72,8 @@ commands:
 
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true && \
               touch traefik/acme.json && chmod 600 traefik/acme.json && cd k3s && \
+              sudo touch /var/log/update_gcp_ssh_firewall.log && \
+              sudo touch /var/log/update_domain_records.log && \
 
               curl -sfL https://get.k3s.io | \
                 sh -s - server --no-deploy traefik --no-deploy servicelb && \

@@ -1,7 +1,7 @@
 #!/bin/bash
 PROJECT_ID=serious-house-242812
 FIREWALL_NAME=default-allow-ssh
-/usr/bin/gcloud auth activate-service-account --key-file=/home/pi/misc/$PROJECT_ID-b2fcc2e0cff0-update-firewall.json
+/usr/bin/gcloud auth activate-service-account --key-file=~/.ssh/$PROJECT_ID-b2fcc2e0cff0-update-firewall.json
 /usr/bin/gcloud --quiet config set project $PROJECT_ID
 
 ## This daily cronjob updates the Google SSH firewall rule to allow Home IP address(es)
