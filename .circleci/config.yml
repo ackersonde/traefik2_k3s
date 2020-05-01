@@ -68,6 +68,7 @@ commands:
 
             cat \<<EOF >/tmp/deploy_script.sh
             scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
+            scp /tmp/update_gcp_ssh_firewall.sh $SSH_USER@$SSH_HOST:~/
             scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
 
             ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true && \
