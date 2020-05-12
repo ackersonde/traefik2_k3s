@@ -23,18 +23,6 @@ subjects:
 
 ---
 
-kind: Middleware
-apiVersion: traefik.containo.us/v1alpha1
-metadata:
-  name: dash-tls-redirect
-  namespace: kubernetes-dashboard
-spec:
-  redirectScheme:
-    scheme: https
-    permanent: true
-
----
-
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:

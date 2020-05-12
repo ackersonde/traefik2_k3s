@@ -57,7 +57,7 @@ spec:
           - --providers.kubernetesCRD
           - --providers.kubernetesIngress=true
           - --log.level=WARN
-          - --metrics.datadog=false
+          - --metrics.datadog=true
           - --certificatesresolvers.letsencrypt.acme.email=dan@ackerson.de
           - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean
