@@ -96,7 +96,7 @@ commands:
                 -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml -f k3s-dashboard-admin.yml datadog-agent.yml"
+                -f 05-pihole.yml -f k3s-dashboard-admin.yml -f datadog-agent.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
