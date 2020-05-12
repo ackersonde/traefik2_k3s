@@ -55,7 +55,8 @@ spec:
             value: "datadoghq.com"
           - name: DD_CRI_SOCKET_PATH
             value: "/run/k3s/containerd/containerd.sock"
-
+          - name: DD_PROCESS_AGENT_CONTAINER_SOURCE="kubelet"
+            value: "kubelet"
           ## Set DD_DOGSTATSD_NON_LOCAL_TRAFFIC to true to allow StatsD collection.
           - name: DD_DOGSTATSD_NON_LOCAL_TRAFFIC
             value: "false"
