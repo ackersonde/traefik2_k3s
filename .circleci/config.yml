@@ -61,7 +61,7 @@ commands:
       - run:
           name: Prepare deploy script for Traefik Proxy server
           command: |
-            export K8S_DASH_VERSION=v2.0.0
+            export K8S_DASH_VERSION=v2.0.1
             export K8S_DASH_URL=https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASH_VERSION/aio/deploy/alternative.yaml
             export METALLB_VERSION=v0.9.3
             export METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
