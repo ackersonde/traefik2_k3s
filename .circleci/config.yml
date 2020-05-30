@@ -36,7 +36,6 @@ jobs:
             sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
             sed -i -e "s@{{SSH_USER}}@$SSH_USER@" 03-deployments.yml
             sed -i -e "s@{{SSH_USER}}@$SSH_USER@g" 05-pihole.yml
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 05-pihole.yml
 
             rm .base64_enc
       - persist_to_workspace:
@@ -49,6 +48,7 @@ jobs:
             - 03-deployments.yml
             - 04-ingressroutes.yml
             - 05-pihole.yml
+            - 06-plex.yml
             - datadog-agent.yml
             - whoami.yml
             - update_domain_records.sh
@@ -96,7 +96,7 @@ commands:
                 -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml -f k3s-dashboard-admin.yml"
+                -f 05-pihole.yml -f 06-plex.yml -f k3s-dashboard-admin.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
