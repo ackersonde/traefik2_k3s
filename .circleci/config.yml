@@ -49,6 +49,7 @@ jobs:
             - 04-ingressroutes.yml
             - 05-pihole.yml
             - 06-plex.yml
+            - 07-transmission.yml
             - datadog-agent.yml
             - whoami.yml
             - update_domain_records.sh
@@ -96,7 +97,8 @@ commands:
                 -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml -f 06-plex.yml -f k3s-dashboard-admin.yml"
+                -f 05-pihole.yml -f 06-plex.yml -f 07-transmission.yml \
+                -f k3s-dashboard-admin.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
