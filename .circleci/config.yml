@@ -25,23 +25,20 @@ jobs:
             export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
             sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 02-svcs-middleware-secrets.yml
 
-            echo -n "$CTX_DATADOG_API_KEY" | base64 | tr -d \\n > .base64_enc
-            export CTX_DATADOG_API_KEY_B64=`cat .base64_enc`
-            sed -i -e "s@{{CTX_DATADOG_API_KEY_B64}}@$CTX_DATADOG_API_KEY_B64@" datadog-agent.yml
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+
+            sed -i -e "s@{{SSH_USER}}@$SSH_USER@" 03-deployments.yml
 
             echo -n "$PIHOLE_WEBPASSWORD" | base64 | tr -d \\n > .base64_enc
             export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
             sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" 05-pihole.yml
 
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
-            sed -i -e "s@{{SSH_USER}}@$SSH_USER@" 03-deployments.yml
             sed -i -e "s@{{SSH_USER}}@$SSH_USER@g" 05-pihole.yml
 
             rm .base64_enc
       - persist_to_workspace:
           root: /setup
           paths:
-            - k3s-dashboard-admin.yml
             - 00-deploy-metallb.yml
             - 01-clusterrole-CRDs.yml
             - 02-svcs-middleware-secrets.yml
@@ -51,9 +48,10 @@ jobs:
             - 06-plex.yml
             - 07-transmission.yml
             - 08-urbit.yml
-            - datadog-agent.yml
-            - whoami.yml
+            - prom-CRDs.yml
+            - prom.yml
             - update_domain_records.sh
+            - update_gcp_ssh_firewall.sh
 
 commands:
   prepare_deploy_script:
@@ -79,7 +77,11 @@ commands:
               sudo touch /var/log/update_domain_records.log && \
 
               curl -sfL https://get.k3s.io | \
-                sh -s - server --disable=traefik --disable=servicelb && \
+                sh -s - server --disable=traefik \
+                --disable=servicelb --disable=metrics-server \
+                --kubelet-arg="containerd=/run/k3s/containerd/containerd.sock" \
+                --kubelet-arg="authorization-mode=Webhook" \
+                --kubelet-arg="authentication-token-webhook=true" && \
 
               sudo kubectl delete secret dockerhub || true && \
               sudo kubectl create secret docker-registry dockerhub \
