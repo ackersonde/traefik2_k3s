@@ -28,7 +28,7 @@ ipv6_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authoriza
 "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID" | jq -r '.[] | .data'`
 
 if [ "$ipv6_current" != "$ipv6_dns" ]; then
-    echo -e "$CURRENT_TIMESTAMP IPv6 updates from $ipv6_dns TO $ipv6_current\n"
+    echo -e "\n$CURRENT_TIMESTAMP IPv6 updates from $ipv6_dns TO $ipv6_current"
     curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
     -d "{\"data\":\"$ipv6_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV6_RECORD_ID"
 fi
@@ -38,7 +38,7 @@ ipv4_current=`curl --silent https://ipv4.icanhazip.com/ | xargs echo -n`
 ipv4_dns=`curl --silent -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
 "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID" | jq -r '.[] | .data'`
 if [ "$ipv4_current" != "$ipv4_dns" ]; then
-    echo -e "$CURRENT_TIMESTAMP IPv4 updates from $ipv4_dns TO $ipv4_current\n"
+    echo -e "\n$CURRENT_TIMESTAMP IPv4 updates from $ipv4_dns TO $ipv4_current"
     curl --silent -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $DO_TOKEN" \
     -d "{\"data\":\"$ipv4_current\"}" "https://api.digitalocean.com/v2/domains/$DOMAIN/records/$IPV4_RECORD_ID"
 fi

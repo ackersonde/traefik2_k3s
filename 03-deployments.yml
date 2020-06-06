@@ -1,5 +1,5 @@
-kind: Deployment
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: traefik2-deploy
 spec:
@@ -57,7 +57,10 @@ spec:
           - --providers.kubernetesCRD
           - --providers.kubernetesIngress=true
           - --log.level=WARN
-          - --metrics.datadog=false
+          - --metrics.prometheus=true
+          - --metrics.prometheus.addEntryPointsLabels=true
+          - --metrics.prometheus.addServicesLabels=true
+          - --metrics.prometheus.manualrouting=true
           - --certificatesresolvers.letsencrypt.acme.email=dan@ackerson.de
           - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean

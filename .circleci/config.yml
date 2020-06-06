@@ -94,12 +94,14 @@ commands:
               sudo kubectl create secret generic -n metallb-system memberlist \
                 --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true && \
 
+              sudo kubectl create namespace monitoring || true && \
+
               sudo kubectl apply \
                 -f 00-deploy-metallb.yml \
                 -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
                 -f 03-deployments.yml -f 04-ingressroutes.yml \
                 -f 05-pihole.yml -f 06-plex.yml -f 07-transmission.yml \
-                -f 08-urbit.yml -f k3s-dashboard-admin.yml"
+                -f 08-urbit.yml -f prom-CRDs.yml -f prom.yml"
             EOF
 
             chmod u+x /tmp/deploy_script.sh
