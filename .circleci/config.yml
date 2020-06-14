@@ -13,45 +13,46 @@ jobs:
       - run:
           name: Prepare YAML config files
           command: |
+            chmod 600 config/base-deploy/*.yml config/proxied-apps/*.yml config/monitoring/*.yml
+            sed -i -e "s@{{ROUTER_PASSWD}}@$ROUTER_PASSWD@" scripts/fritz-cert-upload.sh
+            
             apk -u add apache2-utils
-            chmod 600 *.yml
-
             htpasswd -cb .htpasswd $CTX_BASIC_AUTH_USER $CTX_BASIC_AUTH_PASSWD
             base64 .htpasswd | tr -d \\n > .base64_enc
             export HTPASSWD_B64=`cat .base64_enc`
-            sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
 
             echo -n "$CTX_DIGITALOCEAN_TOKEN" | base64 | tr -d \\n > .base64_enc
             export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
-            sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
 
-            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" 02-svcs-middleware-secrets.yml
+            sed -i -e "s@{{INTERNAL_HOST_IP}}@$INTERNAL_HOST_IP@" config/base-deploy/02-svcs-middleware-secrets.yml
 
-            sed -i -e "s@{{SSH_USER}}@$SSH_USER@" 03-deployments.yml
+            sed -i -e "s@{{SSH_USER}}@$SSH_USER@" config/base-deploy/03-deployments.yml
 
             echo -n "$PIHOLE_WEBPASSWORD" | base64 | tr -d \\n > .base64_enc
             export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
-            sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" 05-pihole.yml
+            sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/proxied-apps/05-pihole.yml
 
-            sed -i -e "s@{{SSH_USER}}@$SSH_USER@g" 05-pihole.yml
+            sed -i -e "s@{{SSH_USER}}@$SSH_USER@g" config/proxied-apps/05-pihole.yml
 
             rm .base64_enc
       - persist_to_workspace:
           root: /setup
           paths:
-            - 00-deploy-metallb.yml
-            - 01-clusterrole-CRDs.yml
-            - 02-svcs-middleware-secrets.yml
-            - 03-deployments.yml
-            - 04-ingressroutes.yml
-            - 05-pihole.yml
-            - 06-plex.yml
-            - 07-transmission.yml
-            - 08-urbit.yml
-            - prom-CRDs.yml
-            - prom.yml
-            - update_domain_records.sh
-            - update_gcp_ssh_firewall.sh
+            - config/monitoring/k3s-dashboard-admin.yml
+            - config/base-deploy/00-deploy-metallb.yml
+            - config/base-deploy/01-clusterrole-CRDs.yml
+            - config/base-deploy/02-svcs-middleware-secrets.yml
+            - config/base-deploy/03-deployments.yml
+            - config/base-deploy/04-ingressroutes.yml
+            - config/proxied-apps/05-pihole.yml
+            - config/proxied-apps/06-plex.yml
+            - config/proxied-apps/07-transmission.yml
+            - config/proxied-apps/08-urbit.yml
+            - scripts/fritz-cert-upload.sh
+            - scripts/update_domain_records.sh
+            - scripts/update_gcp_ssh_firewall.sh
 
 commands:
   prepare_deploy_script:
@@ -67,16 +68,20 @@ commands:
             export METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
 
             cat \<<EOF >/tmp/deploy_script.sh
-            scp -o StrictHostKeyChecking=no /tmp/*.yml $SSH_USER@$SSH_HOST:~/k3s/
-            scp /tmp/update_gcp_ssh_firewall.sh $SSH_USER@$SSH_HOST:~/
-            scp /tmp/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
 
-            ssh $SSH_USER@$SSH_HOST "mkdir traefik || true && mkdir k3s || true && \
-              touch traefik/acme.json && chmod 600 traefik/acme.json && cd k3s && \
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST \
+             "mkdir traefik || true && mkdir k3s || true && \
+              touch traefik/acme.json && chmod 600 traefik/acme.json && \
               sudo touch /var/log/update_gcp_ssh_firewall.log && \
-              sudo touch /var/log/update_domain_records.log && \
+              sudo touch /var/log/update_domain_records.log"
 
-              curl -sfL https://get.k3s.io | \
+            scp -r /tmp/config/* $SSH_USER@$SSH_HOST:~/k3s/
+            scp /tmp/scripts/update_gcp_ssh_firewall.sh $SSH_USER@$SSH_HOST:~/
+            scp /tmp/scripts/update_domain_records.sh $SSH_USER@$SSH_HOST:~/
+            scp /tmp/scripts/fritz-cert-upload.sh $SSH_USER@$SSH_HOST:~/traefik/
+            scp /tmp/scripts/traefik-certs-dumper $SSH_USER@$SSH_HOST:~/traefik/
+
+            ssh $SSH_USER@$SSH_HOST "curl -sfL https://get.k3s.io | \
                 sh -s - server --disable=traefik \
                 --disable=servicelb --disable=metrics-server \
                 --kubelet-arg="containerd=/run/k3s/containerd/containerd.sock" \
@@ -97,11 +102,8 @@ commands:
                 --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true && \
 
               sudo kubectl apply \
-                -f 00-deploy-metallb.yml \
-                -f 01-clusterrole-CRDs.yml -f 02-svcs-middleware-secrets.yml \
-                -f 03-deployments.yml -f 04-ingressroutes.yml \
-                -f 05-pihole.yml -f 06-plex.yml -f 07-transmission.yml \
-                -f 08-urbit.yml"
+                -f k3s/base-deploy \
+                -f k3s/proxied-apps"
             EOF
 
             chmod u+x /tmp/deploy_script.sh

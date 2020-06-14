@@ -1,0 +1,14 @@
+# After curl'ing and applying
+# https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: metal-lb-ip-space
+      protocol: layer2
+      addresses:
+      - 192.168.178.241-192.168.178.249

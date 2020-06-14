@@ -1,0 +1,194 @@
+# https://docs.datadoghq.com/agent/kubernetes/daemonset_setup/?tab=k8sfile
+apiVersion: v1
+kind: Secret
+metadata:
+  name: datadog-secret
+  labels:
+    app: "datadog"
+type: Opaque
+data:
+  api-key: {{CTX_DATADOG_API_KEY_B64}}
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: datadog-agent
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: datadog-agent
+  template:
+    metadata:
+      labels:
+        app: datadog-agent
+      name: datadog-agent
+    spec:
+      serviceAccountName: datadog-agent
+      containers:
+      - image: datadog/agent:latest
+        imagePullPolicy: Always
+        name: datadog-agent
+        ports:
+          - containerPort: 8125
+            ## Custom metrics via DogStatsD - uncomment this section to enable
+            ## custom metrics collection.
+            ## Set DD_DOGSTATSD_NON_LOCAL_TRAFFIC to "true" to collect StatsD metrics
+            ## from other containers.
+            #
+            # hostPort: 8125
+            name: dogstatsdport
+            protocol: UDP
+          - containerPort: 8126
+            ## Trace Collection (APM) - uncomment this section to enable APM
+            # hostPort: 8126
+            name: traceport
+            protocol: TCP
+        env:
+          - name: DD_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: datadog-secret
+                key: api-key
+          - name: DD_SITE
+            value: "datadoghq.com"
+          - name: DD_CRI_SOCKET_PATH
+            value: "/run/k3s/containerd/containerd.sock"
+          - name: DD_PROCESS_AGENT_CONTAINER_SOURCE="kubelet"
+            value: "kubelet"
+          ## Set DD_DOGSTATSD_NON_LOCAL_TRAFFIC to true to allow StatsD collection.
+          - name: DD_DOGSTATSD_NON_LOCAL_TRAFFIC
+            value: "false"
+          - name: KUBERNETES
+            value: "true"
+          - name: DD_HEALTH_PORT
+            value: "5555"
+          - name: DD_COLLECT_KUBERNETES_EVENTS
+            value: "true"
+          - name: DD_LEADER_ELECTION
+            value: "true"
+          - name: DD_APM_ENABLED
+            value: "true"
+          - name: DD_KUBERNETES_KUBELET_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+
+        ## Note these are the minimum suggested values for requests and limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+          - name: containerdsocket
+            mountPath: /run/k3s/containerd/containerd.sock
+          - name: procdir
+            mountPath: /host/proc
+            readOnly: true
+          - name: cgroups
+            mountPath: /host/sys/fs/cgroup
+            readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5555
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+      volumes:
+        - name: containerdsocket
+          hostPath:
+            path: /run/k3s/containerd/containerd.sock
+        - name: procdir
+          hostPath:
+            path: /proc
+        - name: cgroups
+          hostPath:
+            path: /sys/fs/cgroup
+
+---
+# from https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: datadog-agent
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - events
+  - endpoints
+  - pods
+  - nodes
+  - componentstatuses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups: ["quota.openshift.io"]
+  resources:
+  - clusterresourcequotas
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  resourceNames:
+  - datadogtoken             # Kubernetes event collection state
+  - datadog-leader-election  # Leader election token
+  verbs:
+  - get
+  - update
+- apiGroups:  # To create the leader election token
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+- nonResourceURLs:
+  - "/version"
+  - "/healthz"
+  - "/metrics"
+  verbs:
+  - get
+- apiGroups:  # Kubelet connectivity
+  - ""
+  resources:
+  - nodes/metrics
+  - nodes/spec
+  - nodes/proxy
+  - nodes/stats
+  verbs:
+  - get
+
+---
+# from https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/serviceaccount.yaml
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: datadog-agent
+  namespace: default
+
+---
+# from https://raw.githubusercontent.com/DataDog/datadog-agent/master/Dockerfiles/manifests/rbac/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: datadog-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: datadog-agent
+subjects:
+- kind: ServiceAccount
+  name: datadog-agent
+  namespace: default
