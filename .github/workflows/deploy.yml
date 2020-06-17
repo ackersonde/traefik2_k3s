@@ -62,10 +62,10 @@ jobs:
         METALLB_BASE_URL: https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
       run: |
         wg-quick up tunnel
-
+        export BJS_CXN=dan@stand
         export SSH_CXN=${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_SSH_HOST }}
 
-        ssh -o StrictHostKeyChecking=no $SSH_CXN \
+        ssh -o StrictHostKeyChecking=no $BJS_CXN \
           "mkdir traefik || true && mkdir k3s || true && \
           touch traefik/acme.json && chmod 600 traefik/acme.json && \
           sudo touch /var/log/update_gcp_ssh_firewall.log && \
