@@ -31,6 +31,7 @@ jobs:
 
     - name: Configure secrets
       run: |
+        ls -lrt config/
         chmod 600 -R config/
         sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
