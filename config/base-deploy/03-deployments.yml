@@ -57,7 +57,7 @@ spec:
           - --providers.kubernetesCRD
           - --providers.kubernetesIngress=true
           - --log.level=WARN
-          - --metrics.prometheus=true
+          - --metrics.prometheus=false
           - --metrics.prometheus.addEntryPointsLabels=true
           - --metrics.prometheus.addServicesLabels=true
           - --metrics.prometheus.manualrouting=true
