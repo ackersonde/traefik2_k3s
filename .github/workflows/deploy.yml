@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install wireguard and apache2-utils (for htpasswd)
-      run: sudo apt-get update && sudo apt-get install wireguard apache2-utils
+      run: sudo apt-get install wireguard apache2-utils
 
     - name: Create wireguard tunnel configuration
       run: |
