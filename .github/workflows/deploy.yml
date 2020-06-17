@@ -1,0 +1,104 @@
+name: Deploy K3s + Traefik v2
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install wireguard and apache2-utils (for htpasswd)
+      run: sudo apt-get update && sudo apt-get install wireguard apache2-utils
+
+    - name: Create wireguard tunnel configuration
+      run: |
+        sed -i -e "s@{{CTX_WIREGUARD_PRIVATE_KEY}}@${{ secrets.CTX_WIREGUARD_PRIVATE_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_SERVER_PUBLIC_KEY}}@${{ secrets.CTX_WIREGUARD_SERVER_PUBLIC_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_PRESHARED_KEY}}@${{ secrets.CTX_WIREGUARD_PRESHARED_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_SERVER_ENDPOINT}}@${{ secrets.CTX_WIREGUARD_SERVER_ENDPOINT }}@" $GITHUB_WORKSPACE/tunnel.conf
+
+        sudo cp $GITHUB_WORKSPACE/tunnel.conf /etc/wireguard/
+
+    - name: Prepare ssh key for remote login
+      run: |
+        mkdir ~/.ssh/
+        # cat ~/path/to/secret.file | base64 | tr -d \\n > .base64_enc # how to get input
+        echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET }}" | base64 -d > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Configure secrets
+      run: |
+        cd $GITHUB_WORKSPACE
+
+        chmod 600 -R config/
+        sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
+
+        htpasswd -cb .htpasswd ${{ secrets.CTX_BASIC_AUTH_USER }} ${{ secrets.CTX_BASIC_AUTH_PASSWD }}
+        base64 .htpasswd | tr -d \\n > .base64_enc
+        export HTPASSWD_B64=`cat .base64_enc`
+        sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
+
+        echo -n "${{ secrets.CTX_DIGITALOCEAN_TOKEN }}" | base64 | tr -d \\n > .base64_enc
+        export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
+        sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
+
+        sed -i -e "s@{{CTX_K8S_SSH_HOST}}@${{ secrets.CTX_K8S_SSH_HOST }}@" config/base-deploy/02-svcs-middleware-secrets.yml
+
+        sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER }}@" config/base-deploy/03-deployments.yml
+
+        echo -n "${{ secrets.CTX_PIHOLE_WEBPASSWORD }}" | base64 | tr -d \\n > .base64_enc
+        export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
+        sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/proxied-apps/05-pihole.yml
+
+        sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER}}@g" config/proxied-apps/05-pihole.yml
+
+        rm .base64_enc
+
+    - name: Deploy the package
+      env:
+        K8S_DASH_VERSION: v2.0.1
+        K8S_DASH_URL: https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASH_VERSION/aio/deploy/alternative.yaml
+        METALLB_VERSION: v0.9.3
+        METALLB_BASE_URL: https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
+        SSH_CXN: ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_SSH_HOST }}
+      run: |
+        wg-quick up tunnel
+
+        ssh -o StrictHostKeyChecking=no $SSH_CXN \
+          "mkdir traefik || true && mkdir k3s || true && \
+          touch traefik/acme.json && chmod 600 traefik/acme.json && \
+          sudo touch /var/log/update_gcp_ssh_firewall.log && \
+          sudo touch /var/log/update_domain_records.log"
+
+        scp -r config/* $SSH_CXN:~/k3s/
+        scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
+        scp scripts/update_*.sh $SSH_CXN:~/
+
+        ssh $SSH_CXN "curl -sfL https://get.k3s.io | \
+          sh -s - server --disable=traefik \
+          --disable=servicelb --disable=metrics-server \
+          --kubelet-arg='containerd=/run/k3s/containerd/containerd.sock' \
+          --kubelet-arg='authorization-mode=Webhook' \
+          --kubelet-arg='authentication-token-webhook=true' && \
+
+          sudo kubectl delete secret dockerhub || true && \
+          sudo kubectl create secret docker-registry dockerhub \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=${{ secrets.CTX_DOCKER_USER }} \
+            --docker-password=${{ secrets.CTX_DOCKER_PASS }} \
+            --docker-email=dan@ackerson.de && \
+
+          sudo kubectl apply \
+            -f $K8S_DASH_URL -f $METALLB_BASE_URL/namespace.yaml \
+            -f $METALLB_BASE_URL/metallb.yaml && \
+          sudo kubectl create secret generic -n metallb-system memberlist \
+            --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true && \
+
+          sudo kubectl apply \
+            -f k3s/base-deploy \
+            -f k3s/proxied-apps"
+
+        wg-quick down tunnel

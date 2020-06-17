@@ -4,7 +4,7 @@
 
 # parameters
 USERNAME=""
-PASSWORD="{{ROUTER_PASSWD}}"
+PASSWORD="{{CTX_ROUTER_PASSWD}}"
 CERTPATH="./dump"
 HOST=https://fritz.ackerson.de
 
