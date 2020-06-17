@@ -87,7 +87,7 @@ jobs:
             --docker-password=${{ secrets.CTX_DOCKER_PASS }} \
             --docker-email=dan@ackerson.de
 
-          export METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
+          METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
           echo DANNY-"$METALLB_BASE_URL"
 
           sudo kubectl apply \
