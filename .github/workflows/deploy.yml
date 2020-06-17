@@ -15,10 +15,10 @@ jobs:
 
     - name: Create wireguard tunnel configuration
       run: |
-        sed -i -e "s@{{CTX_WIREGUARD_PRIVATE_KEY}}@${{ secrets.CTX_WIREGUARD_PRIVATE_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_SERVER_PUBLIC_KEY}}@${{ secrets.CTX_WIREGUARD_SERVER_PUBLIC_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_PRESHARED_KEY}}@${{ secrets.CTX_WIREGUARD_PRESHARED_KEY }}@" $GITHUB_WORKSPACE/tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_SERVER_ENDPOINT}}@${{ secrets.CTX_WIREGUARD_SERVER_ENDPOINT }}@" $GITHUB_WORKSPACE/tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_PRIVATE_KEY}}@${{ secrets.CTX_WIREGUARD_PRIVATE_KEY }}@" tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_SERVER_PUBLIC_KEY}}@${{ secrets.CTX_WIREGUARD_SERVER_PUBLIC_KEY }}@" tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_PRESHARED_KEY}}@${{ secrets.CTX_WIREGUARD_PRESHARED_KEY }}@" tunnel.conf
+        sed -i -e "s@{{CTX_WIREGUARD_SERVER_ENDPOINT}}@${{ secrets.CTX_WIREGUARD_SERVER_ENDPOINT }}@" tunnel.conf
 
         sudo cp $GITHUB_WORKSPACE/tunnel.conf /etc/wireguard/
 
@@ -31,8 +31,6 @@ jobs:
 
     - name: Configure secrets
       run: |
-        cd $GITHUB_WORKSPACE
-
         chmod 600 -R config/
         sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
