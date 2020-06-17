@@ -91,8 +91,9 @@ jobs:
 
           sudo kubectl apply \
             -f $METALLB_BASE_URL/namespace.yaml -f $METALLB_BASE_URL/metallb.yaml
+          export $METALLB_MEMBERLIST_KEY=`openssl rand -base64 128`
           sudo kubectl create secret generic -n metallb-system memberlist \
-            --from-literal=secretkey=\"$(openssl rand -base64 128)\" || true \
+            --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true \
 
           # sudo kubectl apply -f $K8S_DASH_URL
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
