@@ -88,9 +88,11 @@ jobs:
             --docker-email=dan@ackerson.de
 
           export METALLB_BASE_URL=https://raw.githubusercontent.com/metallb/metallb/$METALLB_VERSION/manifests
+          echo $METALLB_BASE_URL
+
           sudo kubectl apply \
             -f $METALLB_BASE_URL/namespace.yaml -f $METALLB_BASE_URL/metallb.yaml
-          export $METALLB_MEMBERLIST_KEY=`openssl rand -base64 128`
+          export METALLB_MEMBERLIST_KEY=`openssl rand -base64 128 | tr -d \\r\\n`
           sudo kubectl create secret generic -n metallb-system memberlist \
             --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true
 
