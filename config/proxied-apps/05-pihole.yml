@@ -182,6 +182,7 @@ spec:
     middlewares:
       - name: tls-redirect
       - name: api-auth
+      - name: careful-ratelimit
     kind: Rule
     services:
     - name: pihole-admin

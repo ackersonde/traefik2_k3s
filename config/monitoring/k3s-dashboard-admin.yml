@@ -40,6 +40,8 @@ spec:
       namespace: default
     - name: api-auth
       namespace: default
+    - name: careful-ratelimit
+      namespace: default
     services:
     - name: kubernetes-dashboard
       namespace: kubernetes-dashboard
