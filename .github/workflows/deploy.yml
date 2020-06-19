@@ -29,7 +29,7 @@ jobs:
       run: |
         mkdir ~/.ssh/
         # cat ~/path/to/secret.file | base64 | tr -d \\n > .base64_enc # how to get input
-        echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET }}" | base64 -d > ~/.ssh/id_rsa
+        echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 -d > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
     - name: Configure secrets
