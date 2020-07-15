@@ -2,6 +2,10 @@
 
 # traefik2_k3s
 
-Rancher K3s served by a Traefik v2 proxy.
+Rancher/SuSE K3s powered by a [Traefik v2](https://docs.traefik.io/) proxy.
 
 Powers my [homepage](https://github.com/ackersonde/ackerson.de-go) and [slackbot](https://github.com/ackersonde/bender-slackbot).
+
+Github [Actions](https://github.com/ackersonde/traefik2_k3s/actions) handle CI/CD'd to my home raspberryPI cluster via Wireguard VPN connection.
+
+Welcome to the 21st century. :rocket: :stars: :alien:
