@@ -8,4 +8,4 @@ Powers my [homepage](https://github.com/ackersonde/ackerson.de-go) and [slackbot
 
 Github [Actions](https://github.com/ackersonde/traefik2_k3s/actions) handle CI/CD to my home raspberryPI cluster via Wireguard VPN connection.
 
-Welcome to the 21st century. :rocket: :stars: :alien:
+Welcome to the 21st century. :rocket: :alien:
