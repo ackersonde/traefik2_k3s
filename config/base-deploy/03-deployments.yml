@@ -45,6 +45,7 @@ spec:
           successThreshold: 1
           timeoutSeconds: 2
         args:
+          - --pilot.token={{PILOT_TOKEN}}
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
           - --entryPoints.secure.http.tls.certResolver=letsencrypt

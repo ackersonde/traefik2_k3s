@@ -39,20 +39,20 @@ jobs:
         htpasswd -cb .htpasswd ${{ secrets.CTX_BASIC_AUTH_USER }} ${{ secrets.CTX_BASIC_AUTH_PASSWD }}
         base64 .htpasswd | tr -d \\n > .base64_enc
         export HTPASSWD_B64=`cat .base64_enc`
-        sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
 
         echo -n "${{ secrets.CTX_DIGITALOCEAN_TOKEN }}" | base64 | tr -d \\n > .base64_enc
         export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
-        sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
 
+        sed -i -e "s@{{HTPASSWD_B64}}@$HTPASSWD_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
+        sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" config/base-deploy/02-svcs-middleware-secrets.yml
         sed -i -e "s@{{CTX_K8S_SSH_HOST}}@${{ secrets.CTX_K8S_SSH_HOST }}@" config/base-deploy/02-svcs-middleware-secrets.yml
 
         sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER }}@" config/base-deploy/03-deployments.yml
+        sed -i -e "s@{{PILOT_TOKEN}}@${{ secrets.PILOT_TOKEN }}@" config/base-deploy/03-deployments.yml
 
         echo -n "${{ secrets.CTX_PIHOLE_WEBPASSWORD }}" | base64 | tr -d \\n > .base64_enc
         export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
         sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/proxied-apps/05-pihole.yml
-
         sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER}}@g" config/proxied-apps/05-pihole.yml
 
         rm .base64_enc
