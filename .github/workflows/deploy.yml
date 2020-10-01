@@ -75,6 +75,7 @@ jobs:
         scp -r config/* $SSH_CXN:~/k3s/
         scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
         scp scripts/update_*.sh $SSH_CXN:~/
+        scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py $SSH_CXN:~/my-ca/
 
         ssh $SSH_CXN << EOF
           curl -sfL https://get.k3s.io | \
