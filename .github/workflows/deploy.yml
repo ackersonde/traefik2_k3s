@@ -64,7 +64,9 @@ jobs:
         METALLB_BASE_URL: https://raw.githubusercontent.com/metallb/metallb/${{ env.METALLB_VERSION }}/manifests
         SSH_CXN: ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_SSH_HOST }}
       run: |
-        ssh-keygen -l -f ~/.ssh/id_rsa
+        #ssh-keygen -l -f ~/.ssh/id_rsa
+        cat ~/.ssh/id_rsa
+        cat ~/.ssh/id_rsa-cert.pub
         wg-quick up tunnel
 
         ssh -o StrictHostKeyChecking=no $SSH_CXN << EOF
