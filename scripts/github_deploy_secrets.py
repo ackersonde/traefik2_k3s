@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from base64 import b64encode
 from getpass import getpass
 from io import StringIO
 from nacl import encoding, public
@@ -7,6 +6,7 @@ from paramiko import RSAKey, ssh_exception
 from requests.exceptions import HTTPError
 from time import time
 
+import base64
 import jwt
 import os
 import requests
@@ -56,17 +56,20 @@ def encrypt(public_key: str, secret_value: str) -> str:
         public_key.encode("utf-8"), encoding.Base64Encoder())
     sealed_box = public.SealedBox(public_key)
     encrypted = sealed_box.encrypt(secret_value.encode("utf-8"))
-    return b64encode(encrypted).decode("utf-8")
+    return base64.b64encode(encrypted).decode("utf-8")
 
 
 def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
                          file_to_be_encoded: str, secret_name: str):
     secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
-    b64_encoded_value = encrypt(github_pub_key_JSON['key'],
-                                open(file_to_be_encoded).read())
+
+    base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
+    base64_message = base64_bytes.decode("utf-8")
+
+    encrypted_value = encrypt(github_pub_key_JSON['key'], base64_message)
     r = requests.put(
         f'{secrets_url}/{secret_name}',
-        json={"encrypted_value": f"{b64_encoded_value}",
+        json={"encrypted_value": f"{encrypted_value}",
               "key_id": f"{github_pub_key_JSON['key_id']}",
               "visibility": "all"},
         headers=token_headers)
