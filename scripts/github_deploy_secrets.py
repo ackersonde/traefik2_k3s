@@ -77,6 +77,17 @@ def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
     # print(f'Updated {secret_name} with new encoded value of {file_to_be_encoded}')
 
 
+def redeploy_bender_slackbot(access_token: str):
+    token_headers = {'Accept': 'application/vnd.github.v3+json',
+                     'Authorization': f'token {access_token}'}
+
+    resp = requests.post(
+        'https://api.github.com/repos/ackersonde/bender-slackbot/actions/workflows/build.yml/dispatches',
+        json={"ref": "master"},
+        headers=token_headers)
+    resp.raise_for_status()
+
+
 def main():
     # Generate a new JWT using id and private key
     pri_key = get_private_key(GITHUB_SECRETS_PK_PEM_FILE)
@@ -103,6 +114,8 @@ def main():
                              "CTX_SERVER_DEPLOY_SECRET_B64")
         update_github_secret(token_headers, github_pub_key_JSON, SSH_CERT_FILE,
                              "CTX_SERVER_DEPLOY_CACERT_B64")
+
+        redeploy_bender_slackbot(access_token)
     except HTTPError as http_err:
         fatal(f'HTTP error occurred: {http_err}')
     except Exception as err:

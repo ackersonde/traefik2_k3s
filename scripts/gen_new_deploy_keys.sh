@@ -15,7 +15,6 @@ CERT_INFO=`ssh-keygen -L -f id_ed25519_github_deploy-cert.pub`
 if ./github_deploy_secrets.py ; then
     rm id_ed25519_github_deploy*
 
-    # TODO: deploy bender-slackbot app via Github Action trigger (& `kubectl delete -f bender.yaml`)
-
-    curl -s -F token=$SLACK_API_TOKEN -F channel=C092UE0H4 -F text="New Github deploy key uploaded: $CERT_INFO" https://slack.com/api/chat.postMessage
+    curl -s -F token=$SLACK_API_TOKEN -F channel=C092UE0H4 \
+        -F text="New Github deploy key uploaded: $CERT_INFO" https://slack.com/api/chat.postMessage
 fi
