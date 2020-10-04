@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     env:
-      K8S_DASH_VERSION: v2.0.3
+      K8S_DASH_VERSION: v2.0.4
       METALLB_VERSION: v0.9.3
     runs-on: ubuntu-20.04
     steps:
@@ -101,9 +101,13 @@ jobs:
           sudo kubectl create secret generic -n metallb-system memberlist \
             --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true
 
-          # sudo kubectl apply -f ${{ env.K8S_DASH_BASE_URL }}
+          sudo kubectl apply -f ${{ env.K8S_DASH_BASE_URL }}
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
         EOF
 
         sudo rm -Rf config tunnel.conf
         wg-quick down tunnel
+
+        curl -s -F token=${{ secrets.CTX_SLACK_API_TOKEN }} -F channel=C092UE0H4 \
+          -F text="Deployed: <https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID | $GITHUB_REPOSITORY>" \
+          https://slack.com/api/chat.postMessage
