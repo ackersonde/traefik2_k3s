@@ -16,5 +16,5 @@ if ./github_deploy_secrets.py ; then
     rm id_ed25519_github_deploy*
 
     curl -s -F token=$SLACK_API_TOKEN -F channel=C092UE0H4 \
-        -F text="New Github deploy key uploaded: $CERT_INFO" https://slack.com/api/chat.postMessage
+        -F text="$HOSTNAME just updated the SSH deploy key and cert in Org Secrets\n: $CERT_INFO" https://slack.com/api/chat.postMessage
 fi
