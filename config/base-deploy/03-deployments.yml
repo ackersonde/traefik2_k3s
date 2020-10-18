@@ -7,6 +7,7 @@ spec:
   selector:
     matchLabels:
       run: traefik2-proxy
+  revisionHistoryLimit: 5
   template:
     metadata:
       labels:
@@ -45,7 +46,6 @@ spec:
           successThreshold: 1
           timeoutSeconds: 2
         args:
-          - --pilot.token={{PILOT_TOKEN}}
           - --entryPoints.web.address=:80
           - --entryPoints.secure.address=:443
           - --entryPoints.secure.http.tls.certResolver=letsencrypt
@@ -66,8 +66,7 @@ spec:
           - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=digitalocean
           - --certificatesResolvers.letsencrypt.acme.dnsChallenge.delayBeforeCheck=5
-          # Please note that this is the staging Let's Encrypt server.
-          # Once you get things working, you should remove that whole line altogether.
+          # Use this line for the staging Let's Encrypt server. Helpful during new setups so you don't ratelimit yourself:
           # - --certificatesresolvers.letsencrypt.acme.CAserver=https://acme-staging-v02.api.letsencrypt.org/directory
         env:
           - name: DO_AUTH_TOKEN

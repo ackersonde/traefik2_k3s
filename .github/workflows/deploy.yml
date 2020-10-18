@@ -8,7 +8,7 @@ jobs:
   deploy:
     env:
       K8S_DASH_VERSION: v2.0.4
-      METALLB_VERSION: v0.9.3
+      METALLB_VERSION: v0.9.4
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2

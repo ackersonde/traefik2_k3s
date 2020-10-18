@@ -79,6 +79,7 @@ spec:
   selector:
     matchLabels:
       app: pihole
+  revisionHistoryLimit: 5
   template:
     metadata:
       labels:
