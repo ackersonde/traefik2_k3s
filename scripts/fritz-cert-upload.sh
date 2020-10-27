@@ -5,7 +5,7 @@
 # parameters
 USERNAME=""
 PASSWORD="{{CTX_ROUTER_PASSWD}}"
-CERTPATH="./dump"
+CERTPATH="/home/ubuntu/traefik/dump"
 HOST=https://fritz.ackerson.de
 
 # make and secure a temporary file
@@ -13,7 +13,9 @@ TMP="$(mktemp -t XXXXXX)"
 chmod 600 $TMP
 
 # parse out certificates from Traefik 2.2 acme.json file
-./traefik-certs-dumper file --version v2
+/home/ubuntu/traefik/traefik-certs-dumper file --version v2 \
+    --source /home/ubuntu/traefik/acme.json \
+    --dest /home/ubuntu/traefik/dump
 
 # login to the box and get a valid SID
 CHALLENGE=`wget -q -O - $HOST/login_sid.lua | sed -e 's/^.*<Challenge>//' -e 's/<\/Challenge>.*$//'`
@@ -37,4 +39,4 @@ wget -q -O - $HOST/cgi-bin/firmwarecfg --header="Content-type: multipart/form-da
 
 # clean up
 rm -f $TMP
-rm -Rf ./dump/
+rm -Rf /home/ubuntu/traefik/dump/
