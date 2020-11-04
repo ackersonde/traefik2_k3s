@@ -79,12 +79,11 @@ jobs:
         ssh-keygen -L -f ~/.ssh/id_ed25519-cert.pub
         wg-quick up tunnel
 
-        ssh -o StrictHostKeyChecking=no $SSH_CXN << EOF
-          crontab /tmp/crontab.txt
+        export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+        ssh -o StrictHostKeyChecking=no SendEnv="LOG_FILES" $SSH_CXN << EOF
           mkdir traefik || true && mkdir k3s || true && mkdir my-ca || true
           touch traefik/acme.json && chmod 600 traefik/acme.json
 
-          export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
           sudo touch -m $LOG_FILES
           sudo chown ubuntu:ubuntu $LOG_FILES
         EOF
@@ -92,11 +91,12 @@ jobs:
         scp -r config/* $SSH_CXN:~/k3s/
         scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
         scp scripts/update_*.sh $SSH_CXN:~/
-        scp scripts/crontab.txt $SSH_CXN:/tmp/
         scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key $SSH_CXN:~/my-ca/
         scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
 
         ssh $SSH_CXN << EOF
+          crontab /tmp/crontab.txt
+
           curl -sfL https://get.k3s.io | \
             sh -s - server --disable=traefik \
             --disable=servicelb --disable=metrics-server \
