@@ -80,7 +80,7 @@ jobs:
         wg-quick up tunnel
 
         export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
-        ssh -o StrictHostKeyChecking=no SendEnv="LOG_FILES" $SSH_CXN << EOF
+        ssh -o StrictHostKeyChecking=no -o SendEnv="LOG_FILES" $SSH_CXN << EOF
           mkdir traefik || true && mkdir k3s || true && mkdir my-ca || true
           touch traefik/acme.json && chmod 600 traefik/acme.json
 
