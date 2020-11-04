@@ -1,0 +1,7 @@
+export CACERT_KEY_PASS={{CACERT_KEY_PASS}}
+export GITHUB_APP_CLIENT_ID={{GIT_APP_CLIENT_ID}}
+export GITHUB_INSTALL_ID={{GIT_INSTALL_ID}}
+export GITHUB_SECRETS_PK_PEM_FILE="/home/ubuntu/my-ca/{{GIT_APP_SECRETS_PK_PEM_FILE}}"
+export SLACK_API_TOKEN={{CTX_SLACK_NOTIFICATIONS_TOKEN}}
+export SSH_CERT_FILE="/home/ubuntu/my-ca/id_ed25519_github_deploy-cert.pub"
+export SSH_PRIV_KEY="/home/ubuntu/my-ca/id_ed25519_github_deploy"

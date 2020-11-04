@@ -37,6 +37,16 @@ jobs:
       run: |
         sed -i -e "s@{{CTX_ROUTER_PASSWD}}@${{ secrets.CTX_ROUTER_PASSWD }}@" scripts/fritz-cert-upload.sh
 
+        sed -i -e "s@{{CACERT_KEY_PASS}}@${{ secrets.CACERT_KEY_PASS }}@" scripts/github_deploy_params
+        sed -i -e "s@{{GIT_APP_CLIENT_ID}}@${{ secrets.GIT_APP_CLIENT_ID }}@" scripts/github_deploy_params
+        sed -i -e "s@{{GIT_INSTALL_ID}}@${{ secrets.GIT_INSTALL_ID }}@" scripts/github_deploy_params
+        sed -i -e "s@{{GIT_APP_SECRETS_PK_PEM_FILE}}@${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}@" scripts/github_deploy_params
+        sed -i -e "s@{{CTX_SLACK_NOTIFICATIONS_TOKEN}}@${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }}@" scripts/github_deploy_params
+        chmod 600 scripts/github_deploy_params
+
+        echo "${{ secrets.GIT_APP_SECRETS_PK_PEM }}" > ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
+        chmod 600 ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
+
         htpasswd -cb .htpasswd ${{ secrets.CTX_BASIC_AUTH_USER }} ${{ secrets.CTX_BASIC_AUTH_PASSWD }}
         base64 .htpasswd | tr -d \\n > .base64_enc
         export HTPASSWD_B64=`cat .base64_enc`
@@ -65,7 +75,6 @@ jobs:
         SSH_CXN: ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_SSH_HOST }}
       run: |
         ssh-keygen -L -f ~/.ssh/id_ed25519-cert.pub
-        #sleep 5
         wg-quick up tunnel
 
         ssh -o StrictHostKeyChecking=no $SSH_CXN << EOF
@@ -77,7 +86,8 @@ jobs:
         scp -r config/* $SSH_CXN:~/k3s/
         scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
         scp scripts/update_*.sh $SSH_CXN:~/
-        scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py $SSH_CXN:~/my-ca/
+        scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} $SSH_CXN:~/my-ca/
+        scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
 
         ssh $SSH_CXN << EOF
           curl -sfL https://get.k3s.io | \
@@ -105,7 +115,7 @@ jobs:
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
         EOF
 
-        sudo rm -Rf config tunnel.conf
+        sudo rm -Rf config tunnel.conf ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
         wg-quick down tunnel
 
         curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
