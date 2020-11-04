@@ -46,6 +46,8 @@ jobs:
 
         echo "${{ secrets.GIT_APP_SECRETS_PK_PEM }}" > ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
         chmod 600 ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }}
+        echo "${{ secrets.CA_KEY }}" > ca_key
+        chmod 600 ca_key
 
         htpasswd -cb .htpasswd ${{ secrets.CTX_BASIC_AUTH_USER }} ${{ secrets.CTX_BASIC_AUTH_PASSWD }}
         base64 .htpasswd | tr -d \\n > .base64_enc
@@ -78,15 +80,20 @@ jobs:
         wg-quick up tunnel
 
         ssh -o StrictHostKeyChecking=no $SSH_CXN << EOF
-          mkdir traefik || true && mkdir k3s || true
+          crontab /tmp/crontab.txt
+          mkdir traefik || true && mkdir k3s || true && mkdir my-ca || true
           touch traefik/acme.json && chmod 600 traefik/acme.json
-          sudo touch /var/log/update_gcp_ssh_firewall.log /var/log/update_domain_records.log
+
+          export LOG_FILES="/var/log/update_domain_records.log /var/log/gen_new_deploy_keys.log /var/log/fritz-cert-upload.log"
+          sudo touch -m $LOG_FILES
+          sudo chown ubuntu:ubuntu $LOG_FILES
         EOF
 
         scp -r config/* $SSH_CXN:~/k3s/
         scp scripts/fritz-cert-upload.sh scripts/traefik-certs-dumper $SSH_CXN:~/traefik/
         scp scripts/update_*.sh $SSH_CXN:~/
-        scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} $SSH_CXN:~/my-ca/
+        scp scripts/crontab.txt $SSH_CXN:/tmp/
+        scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key $SSH_CXN:~/my-ca/
         scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
 
         ssh $SSH_CXN << EOF
@@ -115,7 +122,7 @@ jobs:
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
         EOF
 
-        sudo rm -Rf config tunnel.conf ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
+        sudo rm -Rf config tunnel.conf ca_key ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
         wg-quick down tunnel
 
         curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
