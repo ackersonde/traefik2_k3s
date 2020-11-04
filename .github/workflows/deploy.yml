@@ -122,7 +122,7 @@ jobs:
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
         EOF
 
-        sudo rm -Rf config tunnel.conf ca_key ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
+        sudo rm -Rf ~/.ssh/ config tunnel.conf ca_key ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
         wg-quick down tunnel
 
         curl -s -o /dev/null -X POST -d token=${{ secrets.CTX_SLACK_NOTIFICATIONS_TOKEN }} -d channel=C092UE0H4 \
