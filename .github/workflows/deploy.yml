@@ -8,7 +8,7 @@ jobs:
   deploy:
     env:
       K8S_DASH_VERSION: v2.0.4
-      METALLB_VERSION: v0.9.4
+      METALLB_VERSION: v0.9.5
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -97,7 +97,7 @@ jobs:
         ssh $SSH_CXN << EOF
           crontab /tmp/crontab.txt
 
-          curl -sfL https://get.k3s.io | \
+          curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.19.3+k3s2 \
             sh -s - server --disable=traefik \
             --disable=servicelb --disable=metrics-server \
             --kubelet-arg="containerd=/run/k3s/containerd/containerd.sock" \
