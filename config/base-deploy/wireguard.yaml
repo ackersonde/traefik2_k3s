@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wireguard
+spec:
+  selector:
+    run: wireguard
+  ports:
+    - name: wireguard-listen
+      port: {{ CTX_WIREGUARD_PORT }}
+      protocol: UDP
+      targetPort: 51820
+  type: NodePort
+  externalIPs:
+  - {{ CTX_WIREGUARD_NODE_IP }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: wireguard
+  template:
+    metadata:
+      labels:
+        run: wireguard
+    spec:
+      nodeSelector:
+        worker: wireguard
+      containers:
+        - env:
+            - name: ALLOWEDIPS
+              value: 192.168.178.0/24,10.0.0.0/24
+            - name: INTERNAL_SUBNET
+              value: 10.0.0.0
+            - name: PEERDNS
+              value: 192.168.178.1
+            - name: PEERS
+              value: "ackbookPro,pops4xl,githubActions"
+            - name: PGID
+              value: "0"
+            - name: PUID
+              value: "0"
+            - name: SERVERPORT
+              value: "{{ CTX_WIREGUARD_PORT }}"
+            - name: SERVERURL
+              value: ackerson.de
+            - name: TZ
+              value: Europe/Berlin
+          image: ghcr.io/linuxserver/wireguard
+          name: wireguard
+          ports:
+            - containerPort: 51820
+              hostPort: {{ CTX_WIREGUARD_PORT }}
+              protocol: UDP
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+          volumeMounts:
+            - mountPath: /config
+              name: wireguard-config-volume
+              readOnly: false
+      volumes:
+        - name: wireguard-config-volume
+          persistentVolumeClaim:
+            claimName: wireguard-config-claim
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wireguard-config-volume
+  labels:
+    directory: wireguard
+spec:
+  capacity:
+    storage: 8Mi
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: manual
+  hostPath:
+    path: /opt/k8s-wireguard
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wireguard-config-claim
+spec:
+  storageClassName: manual
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Mi
+  selector:
+    matchLabels:
+      directory: wireguard

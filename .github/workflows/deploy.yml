@@ -18,17 +18,12 @@ jobs:
 
     - name: Create wireguard tunnel configuration
       run: |
-        sed -i -e "s@{{CTX_WIREGUARD_PRIVATE_KEY}}@${{ secrets.CTX_WIREGUARD_PRIVATE_KEY }}@" tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_SERVER_PUBLIC_KEY}}@${{ secrets.CTX_WIREGUARD_SERVER_PUBLIC_KEY }}@" tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_PRESHARED_KEY}}@${{ secrets.CTX_WIREGUARD_PRESHARED_KEY }}@" tunnel.conf
-        sed -i -e "s@{{CTX_WIREGUARD_SERVER_ENDPOINT}}@${{ secrets.CTX_WIREGUARD_SERVER_ENDPOINT }}@" tunnel.conf
-
-        sudo cp tunnel.conf /etc/wireguard/
+        sudo echo "${{ secrets.CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG }}" > /etc/wireguard/tunnel.conf
 
     - name: Prepare ssh key for remote login
       run: |
         mkdir ~/.ssh/
-        # cat ~/path/to/secret.file | base64 | tr -d \\n > .base64_enc # how to get input
+        # cat ~/path/to/secret.file | base64 | tr -d \\n > SECRET_VALUE # how to generate for storage in GH Secrets
         echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 -d > ~/.ssh/id_ed25519
         echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 -d > ~/.ssh/id_ed25519-cert.pub
         chmod 600 ~/.ssh/id_ed25519
@@ -68,6 +63,9 @@ jobs:
         sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/proxied-apps/05-pihole.yml
         sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER}}@g" config/proxied-apps/05-pihole.yml
 
+        sed -i -e "s@{{CTX_WIREGUARD_PORT}}@${{ secrets.CTX_WIREGUARD_PORT}}@g" config/base-deploy/wireguard.yml
+        sed -i -e "s@{{CTX_WIREGUARD_NODE_IP}}@${{ secrets.CTX_WIREGUARD_NODE_IP}}@" config/base-deploy/wireguard.yml
+
         rm .base64_enc
 
     - name: Deploy the package
@@ -94,6 +92,13 @@ jobs:
         scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key $SSH_CXN:~/my-ca/
         scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
 
+        #TODO: ssh into worker nodes and get k3s up & running # for i in (..)?
+        ssh -o StrictHostKeyChecking=no ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_WIREGUARD_HOST }} << EOF
+          curl -sfL https://get.k3s.io | \
+            K3S_URL=https://${{ secrets.CTX_K8S_SSH_HOST }}:6443 \
+            K3S_TOKEN=${{ secrets.CTX_K3S_TOKEN_MASTER }} sh -
+        EOF
+
         ssh $SSH_CXN << EOF
           crontab /tmp/crontab.txt
 
@@ -117,6 +122,9 @@ jobs:
           export METALLB_MEMBERLIST_KEY=`openssl rand -base64 128 | tr -d \\\\r\\\\n`
           sudo kubectl create secret generic -n metallb-system memberlist \
             --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true
+
+          sudo kubectl label --overwrite node ${{ secrets.CTX_K8S_WIREGUARD_HOST }} \
+            worker=wireguard node-role.kubernetes.io/worker=wireguard
 
           sudo kubectl apply -f ${{ env.K8S_DASH_BASE_URL }} -f k3s/monitoring/k3s-dashboard-admin.yml
           sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps

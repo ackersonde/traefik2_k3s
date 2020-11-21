@@ -96,17 +96,3 @@ spec:
   resources:
     requests:
       storage: 8Mi
-
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: task-pv-volume
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 10Mi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/home/{{CTX_K8S_SSH_USER}}/traefik"
