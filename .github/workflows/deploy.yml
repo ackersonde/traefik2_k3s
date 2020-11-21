@@ -93,7 +93,7 @@ jobs:
         scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
 
         #TODO: ssh into worker nodes and get k3s up & running # for i in (..)?
-        ssh -o StrictHostKeyChecking=no ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_WIREGUARD_HOST }} << EOF
+        ssh -o StrictHostKeyChecking=no ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_WIREGUARD_NODE_IP }} << EOF
           curl -sfL https://get.k3s.io | \
             K3S_URL=https://${{ secrets.CTX_K8S_SSH_HOST }}:6443 \
             K3S_TOKEN=${{ secrets.CTX_K3S_TOKEN_MASTER }} sh -

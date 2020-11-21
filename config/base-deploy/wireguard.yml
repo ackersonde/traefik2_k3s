@@ -37,8 +37,8 @@ spec:
               value: 192.168.178.0/24,10.0.0.0/24
             - name: INTERNAL_SUBNET
               value: 10.0.0.0
-#            - name: PEERDNS
-#              value: 192.168.178.1
+            - name: PEERDNS
+              value: 192.168.178.1
             - name: PEERS
               value: "ackbookPro,pops4xl,githubActions"
             - name: PGID
