@@ -7,12 +7,12 @@ spec:
     run: wireguard
   ports:
     - name: wireguard-listen
-      port: {{ CTX_WIREGUARD_PORT }}
+      port: {{CTX_WIREGUARD_PORT}}
       protocol: UDP
       targetPort: 51820
   type: NodePort
   externalIPs:
-  - {{ CTX_WIREGUARD_NODE_IP }}
+  - {{CTX_WIREGUARD_NODE_IP}}
 
 ---
 apiVersion: apps/v1
@@ -46,7 +46,7 @@ spec:
             - name: PUID
               value: "0"
             - name: SERVERPORT
-              value: "{{ CTX_WIREGUARD_PORT }}"
+              value: "{{CTX_WIREGUARD_PORT}}"
             - name: SERVERURL
               value: ackerson.de
             - name: TZ
@@ -55,7 +55,7 @@ spec:
           name: wireguard
           ports:
             - containerPort: 51820
-              hostPort: {{ CTX_WIREGUARD_PORT }}
+              hostPort: {{CTX_WIREGUARD_PORT}}
               protocol: UDP
           securityContext:
             capabilities:
