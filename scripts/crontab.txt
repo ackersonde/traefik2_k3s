@@ -1,5 +1,5 @@
 # m h  dom mon dow   command
 #15 7 * * * /bin/bash /home/ubuntu/update_gcp_ssh_firewall.sh > /var/log/update_gcp_ssh_firewall.log 2>&1
 55 * * * * /bin/bash /home/ubuntu/update_domain_records.sh > /var/log/update_domain_records.log 2>&1
-50 07 28 * * /home/ubuntu/my-ca/gen_new_deploy_keys.sh > /var/log/gen_new_deploy_keys.log 2>&1
+50 07 02 * * /home/ubuntu/my-ca/gen_new_deploy_keys.sh > /var/log/gen_new_deploy_keys.log 2>&1
 05 19 28 * * /home/ubuntu/traefik/fritz-cert-upload.sh > /var/log/fritz-cert-upload.log 2>&1

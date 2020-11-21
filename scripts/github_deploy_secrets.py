@@ -17,6 +17,7 @@ GITHUB_INSTALL_ID = os.environ['GITHUB_INSTALL_ID']
 GITHUB_SECRETS_PK_PEM_FILE = os.environ['GITHUB_SECRETS_PK_PEM_FILE']
 SSH_CERT_FILE = os.environ['SSH_CERT_FILE']
 SSH_PRIV_KEY = os.environ['SSH_PRIV_KEY']
+WG_PEER_CONFIG_FILE = os.environ['WG_PEER_CONFIG_FILE']
 
 
 def fatal(message):
@@ -60,13 +61,16 @@ def encrypt(public_key: str, secret_value: str) -> str:
 
 
 def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
-                         file_to_be_encoded: str, secret_name: str):
+                         file_to_be_encoded: str, secret_name: str, b64encode=True):
     secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
 
-    base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
-    base64_message = base64_bytes.decode("utf-8")
+    if b64encode:
+        base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
+        msg = base64_bytes.decode("utf-8")
+    else:
+        msg = open(file_to_be_encoded, "rb").read()
 
-    encrypted_value = encrypt(github_pub_key_JSON['key'], base64_message)
+    encrypted_value = encrypt(github_pub_key_JSON['key'], msg)
     r = requests.put(
         f'{secrets_url}/{secret_name}',
         json={"encrypted_value": f"{encrypted_value}",
@@ -114,6 +118,8 @@ def main():
                              "CTX_SERVER_DEPLOY_SECRET_B64")
         update_github_secret(token_headers, github_pub_key_JSON, SSH_CERT_FILE,
                              "CTX_SERVER_DEPLOY_CACERT_B64")
+        update_github_secret(token_headers, github_pub_key_JSON, WG_PEER_CONFIG_FILE,
+                             "CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG", b64encode=False)
 
         redeploy_bender_slackbot(access_token)
     except HTTPError as http_err:
