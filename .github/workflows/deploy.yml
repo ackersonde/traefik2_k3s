@@ -13,8 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install wireguard, resolvconf & apache2-utils (for htpasswd)
-      run: sudo apt-get install wireguard apache2-utils resolvconf
+    - name: Install wireguard & apache2-utils (for htpasswd)
+      run: sudo apt-get install wireguard apache2-utils
 
     - name: Create wireguard tunnel configuration
       run: |
