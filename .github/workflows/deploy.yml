@@ -91,6 +91,7 @@ jobs:
         scp scripts/update_*.sh $SSH_CXN:~/
         scp scripts/gen_new_deploy_keys.sh scripts/github_deploy_secrets.py ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} ca_key $SSH_CXN:~/my-ca/
         scp scripts/github_deploy_params $SSH_CXN:~/.ssh/
+        scp scripts/crontab.txt $SSH_CXN:/tmp/
 
         #TODO: ssh into worker nodes and get k3s up & running # for i in (..)?
         ssh -o StrictHostKeyChecking=no ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_WIREGUARD_NODE_IP }} << EOF
