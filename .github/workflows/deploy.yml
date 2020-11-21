@@ -18,7 +18,7 @@ jobs:
 
     - name: Create wireguard tunnel configuration
       run: |
-        sudo echo "${{ secrets.CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG }}" > /etc/wireguard/tunnel.conf
+        echo "${{ secrets.CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG }}" | sudo tee /etc/wireguard/tunnel.conf
 
     - name: Prepare ssh key for remote login
       run: |
