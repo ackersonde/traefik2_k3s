@@ -62,14 +62,14 @@ def encrypt(public_key: str, secret_value: str) -> str:
 
 def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
                          file_to_be_encoded: str, secret_name: str, b64encode=True):
-    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
-
+    msg = ""
     if b64encode:
         base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
         msg = base64_bytes.decode("utf-8")
     else:
         msg = open(file_to_be_encoded, "rb").read()
 
+    secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
     encrypted_value = encrypt(github_pub_key_JSON['key'], msg)
     r = requests.put(
         f'{secrets_url}/{secret_name}',
