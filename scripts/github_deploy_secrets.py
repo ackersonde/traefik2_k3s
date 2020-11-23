@@ -60,8 +60,9 @@ def encrypt(public_key: str, secret_value: str) -> str:
     return base64.b64encode(encrypted).decode("utf-8")
 
 
-def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
-                         file_to_be_encoded: str, secret_name: str, b64encode=True):
+def update_github_secret(
+        token_headers: dict, github_pub_key_JSON: dict,
+        file_to_be_encoded: str, secret_name: str, b64encode=True):
     msg = ""
     if b64encode:
         base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
@@ -78,7 +79,6 @@ def update_github_secret(token_headers: dict, github_pub_key_JSON: dict,
               "visibility": "all"},
         headers=token_headers)
     r.raise_for_status()
-    # print(f'Updated {secret_name} with new encoded value of {file_to_be_encoded}')
 
 
 def redeploy_bender_slackbot(access_token: str):
@@ -118,8 +118,10 @@ def main():
                              "CTX_SERVER_DEPLOY_SECRET_B64")
         update_github_secret(token_headers, github_pub_key_JSON, SSH_CERT_FILE,
                              "CTX_SERVER_DEPLOY_CACERT_B64")
-        update_github_secret(token_headers, github_pub_key_JSON, WG_PEER_CONFIG_FILE,
-                             "CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG", b64encode=False)
+        update_github_secret(token_headers, github_pub_key_JSON,
+                             WG_PEER_CONFIG_FILE,
+                             "CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG",
+                             b64encode=False)
 
         redeploy_bender_slackbot(access_token)
     except HTTPError as http_err:

@@ -23,11 +23,13 @@ sudo kubectl scale deployment --replicas=0 wireguard && sudo kubectl scale deplo
 # capture new peer config in file
 sudo kubectl exec -it $(k get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- cat /config/peer_githubActions/peer_githubActions.conf | tee $WORKING_DIR/ghActions.conf
 
+NEW_WG_PUBKEY=`cat $WORKING_DIR/ghActions.conf | grep Public`
+
 # heavy lifting which updates github secrets via API
 if $WORKING_DIR/github_deploy_secrets.py ; then
     rm $WORKING_DIR/id_ed25519_github_deploy*
     rm $WORKING_DIR/ghActions.conf
 
     curl -s -F token=$SLACK_API_TOKEN -F channel=C092UE0H4 \
-        -F text="$HOSTNAME just updated the SSH deploy key and cert in Org Secrets\n: $CERT_INFO" https://slack.com/api/chat.postMessage
+        -F text="$HOSTNAME just updated the SSH deploy key, cert & wireguard keys in Org Secrets\n: $CERT_INFO\nWireguard client $NEW_WG_PUBKEY" https://slack.com/api/chat.postMessage
 fi
