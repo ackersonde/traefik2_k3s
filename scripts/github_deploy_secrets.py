@@ -3,6 +3,7 @@ from getpass import getpass
 from io import StringIO
 from nacl import encoding, public
 from paramiko import RSAKey, ssh_exception
+from pathlib import Path
 from requests.exceptions import HTTPError
 from time import time
 
@@ -65,10 +66,10 @@ def update_github_secret(
         file_to_be_encoded: str, secret_name: str, b64encode=True):
     msg = ""
     if b64encode:
-        base64_bytes = base64.b64encode(open(file_to_be_encoded, "rb").read())
+        base64_bytes = base64.b64encode(Path(file_to_be_encoded).read_bytes())
         msg = base64_bytes.decode("utf-8")
     else:
-        msg = open(file_to_be_encoded, "rb").read()
+        msg = Path(file_to_be_encoded).read_text()
 
     secrets_url = 'https://api.github.com/orgs/ackersonde/actions/secrets'
     encrypted_value = encrypt(github_pub_key_JSON['key'], msg)
