@@ -36,5 +36,5 @@ if $WORKING_DIR/github_deploy_secrets.py ; then
         -d text="$HOSTNAME just updated the SSH deploy key & cert in Org Secrets:" $SLACK_URL
     curl -s -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 -d text="$CERT_INFO" $SLACK_URL
     curl -s -d token=$SLACK_API_TOKEN -d channel=C092UE0H4 \
-        -d text="New wireguard client public key: $NEW_WG_PUBKEY" $SLACK_URL
+        --data-binary text="New wireguard client public key: $NEW_WG_PUBKEY" $SLACK_URL
 fi
