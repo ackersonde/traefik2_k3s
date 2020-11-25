@@ -16,6 +16,8 @@ spec:
       serviceAccountName: traefik2-ingress-controller
       terminationGracePeriodSeconds: 60
       restartPolicy: Always
+      nodeSelector:
+        traefik: proxy
       containers:
       - image: traefik:2.3
         imagePullPolicy: Always

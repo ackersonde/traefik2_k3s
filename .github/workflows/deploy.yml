@@ -124,6 +124,7 @@ jobs:
           sudo kubectl create secret generic -n metallb-system memberlist \
             --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true
 
+          sudo kubectl label --overwrite node pi4 traefik=proxy
           sudo kubectl label --overwrite node ${{ secrets.CTX_K8S_WIREGUARD_HOST }} \
             worker=wireguard node-role.kubernetes.io/worker=wireguard
 
