@@ -30,7 +30,7 @@ spec:
         run: wireguard
     spec:
       nodeSelector:
-        worker: wireguard
+        traefik: proxy
       containers:
         - env:
             - name: ALLOWEDIPS
