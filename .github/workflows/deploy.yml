@@ -125,7 +125,7 @@ jobs:
             --from-literal=secretkey="$METALLB_MEMBERLIST_KEY" || true
 
           sudo kubectl label --overwrite node pi4 traefik=proxy
-          sudo kubectl label --overwrite node ${{ secrets.CTX_K8S_WIREGUARD_HOST }} \
+          sudo kubectl label --overwrite node vpnpi mountusb=mediaserver \
             worker=wireguard node-role.kubernetes.io/worker=wireguard
 
           # sudo kubectl apply -f ${{ env.K8S_DASH_BASE_URL }} -f k3s/monitoring/k3s-dashboard-admin.yml
