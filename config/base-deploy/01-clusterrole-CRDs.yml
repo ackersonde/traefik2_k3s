@@ -68,7 +68,7 @@ subjects:
 
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 metadata:
   name: traefikservices.traefik.containo.us
 spec:
@@ -82,7 +82,7 @@ spec:
 
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 metadata:
   name: ingressroutes.traefik.containo.us
 spec:
@@ -96,7 +96,7 @@ spec:
 
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 metadata:
   name: ingressroutetcps.traefik.containo.us
 spec:
@@ -110,7 +110,7 @@ spec:
 
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 metadata:
   name: middlewares.traefik.containo.us
 spec:
@@ -124,7 +124,7 @@ spec:
 
 ---
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 metadata:
   name: tlsoptions.traefik.containo.us
 spec:
@@ -137,8 +137,8 @@ spec:
   scope: Namespaced
 
 ---
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: ingressrouteudps.traefik.containo.us
 
@@ -152,8 +152,8 @@ spec:
   scope: Namespaced
 
 ---
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
-apiVersion: apiextensions.k8s.io/v1
 metadata:
   name: tlsstores.traefik.containo.us
 
