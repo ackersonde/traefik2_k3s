@@ -19,7 +19,7 @@ spec:
       nodeSelector:
         traefik: proxy
       containers:
-      - image: traefik:2.3
+      - image: traefik:2.4
         imagePullPolicy: Always
         name: traefik2-ctr
         ports:
