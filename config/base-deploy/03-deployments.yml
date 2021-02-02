@@ -92,7 +92,6 @@ metadata:
   labels:
     run: traefik2-proxy
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
