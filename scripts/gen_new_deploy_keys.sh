@@ -15,18 +15,18 @@ ssh-keygen -s $WORKING_DIR/ca_key -I github -n ubuntu,ackersond -P "$CACERT_KEY_
 CERT_INFO=`ssh-keygen -L -f $WORKING_DIR/id_ed25519_github_deploy-cert.pub`
 
 # rm wireguard peer & server configs
-sudo kubectl exec -it $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- rm -Rf /config/peer_githubActions /config/wg0.conf
+sudo kubectl exec -i $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- rm -Rf /config/peer_githubActions /config/wg0.conf
 
 # restart wireguard container to force regeneration
 sudo kubectl scale deployment --replicas=0 wireguard && sleep 45
 sudo kubectl scale deployment --replicas=1 wireguard && sleep 45
 
 # capture new peer config in file
-sudo kubectl exec -it $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- cat /config/peer_githubActions/peer_githubActions.conf | tee $WORKING_DIR/ghActions.conf
+sudo kubectl exec -i $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- cat /config/peer_githubActions/peer_githubActions.conf | tee $WORKING_DIR/ghActions.conf
 retVal=$?
 
 if [ $retVal -eq 0 ]; then
-    sudo kubectl exec -it $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- cat /config/peer_githubActions/publickey-peer_githubActions | tee $WORKING_DIR/ghActions.pub
+    sudo kubectl exec -i $(sudo kubectl get po | grep wireguard | awk '{print $1; exit}' | tr -d \\n) -- cat /config/peer_githubActions/publickey-peer_githubActions | tee $WORKING_DIR/ghActions.pub
 
     NEW_WG_PUBKEY=`cat $WORKING_DIR/ghActions.pub`
 
