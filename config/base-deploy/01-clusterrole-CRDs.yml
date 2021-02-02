@@ -46,6 +46,7 @@ rules:
       - ingressrouteudps
       - tlsoptions
       - tlsstores
+      - serverstransports
     verbs:
       - get
       - list
@@ -57,8 +58,8 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: traefik2-ingress-controller
 roleRef:
-  kind: ClusterRole
   apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
   name: traefik2-ingress-controller
 subjects:
   - kind: ServiceAccount
