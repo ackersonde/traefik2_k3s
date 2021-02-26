@@ -60,8 +60,8 @@ jobs:
 
         echo -n "${{ secrets.CTX_PIHOLE_WEBPASSWORD }}" | base64 | tr -d \\n > .base64_enc
         export PIHOLE_WEBPASSWORD_B64=`cat .base64_enc`
-        sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/proxied-apps/05-pihole.yml
-        sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER}}@g" config/proxied-apps/05-pihole.yml
+        sed -i -e "s@{{PIHOLE_WEBPASSWORD_B64}}@$PIHOLE_WEBPASSWORD_B64@" config/base-deploy/05-pihole.yml
+        sed -i -e "s@{{CTX_K8S_SSH_USER}}@${{ secrets.CTX_K8S_SSH_USER}}@g" config/base-deploy/05-pihole.yml
 
         sed -i -e "s@{{CTX_WIREGUARD_PORT}}@${{ secrets.CTX_WIREGUARD_PORT}}@g" config/base-deploy/wireguard.yml
         sed -i -e "s@{{CTX_WIREGUARD_NODE_IP}}@${{ secrets.CTX_WIREGUARD_NODE_IP}}@" config/base-deploy/wireguard.yml
@@ -129,7 +129,7 @@ jobs:
             worker=wireguard node-role.kubernetes.io/worker=wireguard
 
           # sudo kubectl apply -f ${{ env.K8S_DASH_BASE_URL }} -f k3s/monitoring/k3s-dashboard-admin.yml
-          sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
+          # sudo kubectl apply -f k3s/base-deploy -f k3s/proxied-apps
         EOF
 
         sudo rm -Rf ~/.ssh/ config tunnel.conf ca_key ${{ secrets.GIT_APP_SECRETS_PK_PEM_FILE }} scripts/github_deploy_params
