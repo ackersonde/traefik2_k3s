@@ -51,7 +51,7 @@ spec:
               value: ackerson.de
             - name: TZ
               value: Europe/Berlin
-          image: ghcr.io/linuxserver/wireguard
+          image: ghcr.io/linuxserver/wireguard:latest
           name: wireguard
           ports:
             - containerPort: 51820
